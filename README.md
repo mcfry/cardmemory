@@ -1,0 +1,1 @@
+The front end of a simple app that will provide guided learning to memorize a full deck of cards in one pass.
