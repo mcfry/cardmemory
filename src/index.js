@@ -5,7 +5,6 @@ import { BrowserRouter as Router } from 'react-router-dom';
 
 // Site-wide css
 import 'font-awesome/css/font-awesome.min.css';
-import './index.css';
 
 // Main config
 import registerServiceWorker from './registerServiceWorker';

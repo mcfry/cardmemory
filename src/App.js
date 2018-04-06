@@ -27,16 +27,18 @@ class App extends Component {
       <div className="App">
         <NavbarInternal />
         <div className="AppContent">
-          <div className="container-fluid">
-            {alerts}
-          </div>
-
+        
           <Switch>
             <Route exact path="/" component={Home} />
             <Route path="/manage-deck" component={Manager} />
             <Route path="/practice" component={Practice} />
             <Route path="/about" component={About} />
           </Switch>
+
+          <div className="container-fluid">
+            {alerts}
+          </div>
+
         </div>
       </div>
     );

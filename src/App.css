@@ -1,3 +1,13 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+button, .btn, span {
+	outline: none !important;
+}
+
 .App {
 }
 
@@ -11,4 +21,8 @@
 
 .btn {
 	border-radius: 0px;
+}
+
+.nav-link {
+	cursor: pointer;
 }

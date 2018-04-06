@@ -1,0 +1,65 @@
+.nav-tabs {
+	border-bottom: 1px solid #ddd;
+}
+
+.nav-tabs .container .nav-link:active,
+.nav-tabs .container .nav-link:hover {
+	border: none;
+	-webkit-box-shadow: inset 0 -2px 0 #2196F3;
+	box-shadow: inset 0 -2px 0 black;
+	color: black;
+}
+
+.nav-tabs .container .nav-link.active, 
+.nav-tabs .container .nav-link.active:focus,
+.nav-tabs .container .nav-link.active:active {
+	border: none;
+	-webkit-box-shadow: inset 0 -2px 0 #2196F3;
+	box-shadow: inset 0 -2px 0 red;
+	color: red;
+}
+
+.card {
+	width: 290px;
+}
+
+.bg-active-light, 
+.bg-light:hover {
+	box-shadow: 0px 0px 2px 4px rgba(50, 153, 255, 0.3);
+}
+.bg-active-dark, 
+.bg-dark:hover {
+	box-shadow: 0px 0px 6px 1px #3299FF;
+}
+
+.card-div {
+	height: 170px;
+}
+
+.card-image {
+	margin: 0 auto;
+	max-height: 170px !important;
+}
+
+.card-header, .card-footer {
+	background-color: transparent;
+	font-size: 24px;
+}
+
+.top-suit {
+	margin-top: -4px;
+	margin-left: 2px;
+}
+
+.bottom-suit {
+	margin-top: -4px;
+	margin-right: -44px;
+}
+
+.col-form-label {
+	font-size: 14px;
+}
+
+.hide-div {
+	display: none;
+}

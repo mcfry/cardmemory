@@ -6,7 +6,7 @@ import { Link, NavLink, withRouter } from 'react-router-dom';
 import './NavbarInternal.css';
 
 // Images
-import playingCards from '../../../images/card-icons/playing-cards.png';
+import playingCardsImg from '../../../images/card-icons/playing-cards.png';
 
 // Components
 import LoginModal from '../../modals/LoginModal';
@@ -66,7 +66,7 @@ class NavbarInternal extends React.Component {
   }
 
   render () {
-    const isLoggedIn = this.state.loggedIn ? (
+    const loginNav = this.state.loggedIn ? (
       <ul className="navbar-nav">
         <li className="nav-item">
           <a className="nav-link active">{localStorage.getItem('username')}</a>
@@ -95,7 +95,7 @@ class NavbarInternal extends React.Component {
 
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
-        <img src={playingCards} className="logo" alt="logo"/>
+        <img src={playingCardsImg} className="logo" alt="logo"/>
         <Link className="navbar-brand" to="/">Card Memory</Link>
         <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" 
                 aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,7 +118,7 @@ class NavbarInternal extends React.Component {
             </li>
           </ul>
 
-          {isLoggedIn}
+          {loginNav}
         </div>
       </nav>
     );
