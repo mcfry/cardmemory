@@ -1,3 +1,17 @@
 .alert {
 	border-radius: 0px;
 }
+
+.alert {
+  transition: visibility 0.4s, opacity 0.4s;
+  opacity: 1 !important;
+}
+
+.alert.hide {
+  opacity: 0 !important;
+  pointer-events:none;
+}
+
+.alert.none {
+	display: none;
+}

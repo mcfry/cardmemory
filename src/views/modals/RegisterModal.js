@@ -18,6 +18,7 @@ class RegisterModal extends React.Component {
 		this.email = React.createRef();
 		this.password = React.createRef();
 		this.confirmPassword = React.createRef();
+		this.alert = React.createRef();
 
 		// Func binds
 		this.attemptToRegisterUser = this.attemptToRegisterUser.bind(this);
@@ -30,6 +31,12 @@ class RegisterModal extends React.Component {
 			lastRegisterFailed: false, userRegistered: false, usernameValid: false, usernameErrorStr: "", 
 			emailValid: false, emailErrorStr: "", passwordsValid: false, passwordsErrorStr: "", confPasswordsErrorStr: ""
 		};
+	}
+
+	handleEnter = (event) => {
+		if (event.key === "Enter") {
+			this.attemptToRegisterUser();
+		}
 	}
 
 	validateUsername() {
@@ -106,16 +113,23 @@ class RegisterModal extends React.Component {
 		});
 	}
 
+	// Note: Functionality is limited and state is small, no need to refactor 
 	attemptToRegisterUser() {
 		if (this.username.current.value !== "" && this.email.current.value !== "" && this.state.passwordsValid) {
-
 			let that = this;
-			axios.post('http://0.0.0.0:3001/users', {
-				username: that.username.current.value,
-				email: that.email.current.value,
-				password: that.password.current.value,
-				password_confirmation: that.confirmPassword.current.value
-			}).then(function (response) {
+			axios({
+		        url: `http://0.0.0.0:3001/users`, 
+		        method: 'post',
+		        data: {
+		        	username: that.username.current.value,
+					email: that.email.current.value,
+					password: that.password.current.value,
+					password_confirmation: that.confirmPassword.current.value
+		        },
+		        headers: {
+		          'Content-Type': 'application/json'
+		        }
+		    }).then(function (response) {
 				sessionStorage.pushItem('alerts', {
 					type: 'success',
 					message: "You've successfully registered, try signing in!"
@@ -124,22 +138,26 @@ class RegisterModal extends React.Component {
 				that.modalClose.current.click();
 				that.props.history.push('/');
 			}).catch(function (error) {
-				console.log(error);
 				that.setState({
-					userRegistered: false,
-					lastRegisterFailed: true
+					userRegistered: false,lastRegisterFailed: true
 				});
+				if (that.alert.current) {
+					that.alert.current.resetAlert();
+				}
 			});
 		} else {
 			this.setState({
 				userRegistered: false, lastRegisterFailed: true
 			});
+			if (this.alert.current) {
+				this.alert.current.resetAlert();
+			}
 		}
 	}
 
 	render() {
 		const lastRegisterAlert = this.state.lastRegisterFailed ? 
-			<Alert alertType="danger" alertMessage="Oh snap! Change a few things up and try submitting again."/> : '';
+			<Alert alertType="danger" alertMessage="Oh snap! Change a few things up and try submitting again." ref={this.alert} /> : '';
 
 		// Begin User Helpers
 		const emptyUsername = !this.username.current || (this.username.current && String.isEmpty(this.username.current.value));
@@ -216,22 +234,26 @@ class RegisterModal extends React.Component {
 					    <form ref={this.registerForm}>
 					        <div className={UsernameFormGroup}>
 								<label htmlFor="username-input">Username</label>
-								<input type="text" className={UsernameFormControl} onChange={this.validateUsername} id="username-input" aria-describedby="usernameHelp" placeholder="Username" ref={this.username}/>
+								<input type="text" className={UsernameFormControl} onKeyPress={this.handleEnter} onChange={this.validateUsername} 
+										id="username-input" aria-describedby="usernameHelp" placeholder="Username" ref={this.username}/>
 								{usernameHelp}
 							</div>
 					        <div className={EmailFormGroup}>
 								<label htmlFor="email-input">Email Address</label>
-								<input type="email" className={EmailFormControl} onChange={this.validateEmail} id="email-input" aria-describedby="emailHelp" placeholder="Enter email" ref={this.email}/>
+								<input type="email" className={EmailFormControl} onKeyPress={this.handleEnter} onChange={this.validateEmail} 
+										id="email-input" aria-describedby="emailHelp" placeholder="Enter email" ref={this.email}/>
 								{emailHelp}
 							</div>
 							<div className={passFormGroup}>
 								<label htmlFor="password-input">Password</label>
-								<input type="password" className={passFormControl} onChange={this.validatePassword} id="password-input" aria-describedby="passHelp" placeholder="Password" ref={this.password}/>
+								<input type="password" className={passFormControl} onKeyPress={this.handleEnter} onChange={this.validatePassword} 
+										id="password-input" aria-describedby="passHelp" placeholder="Password" ref={this.password}/>
 								{passHelp}
 							</div>
 							<div className={passConfirmFormGroup}>
 								<label htmlFor="confirm-password-input">Confirm Password</label>
-								<input type="password" className={passConfirmFormControl} onChange={this.validatePassword} id="confirm-password-input" aria-describedby="passConfirmHelp" placeholder="Password" ref={this.confirmPassword}/>
+								<input type="password" className={passConfirmFormControl} onKeyPress={this.handleEnter} onChange={this.validatePassword} 
+										id="confirm-password-input" aria-describedby="passConfirmHelp" placeholder="Password" ref={this.confirmPassword}/>
 								{passConfirmHelp}
 							</div>
 						</form>

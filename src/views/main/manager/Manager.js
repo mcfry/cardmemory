@@ -1,6 +1,7 @@
 // Libraries
 import React from "react";
 import classNames from "classnames";
+import axios from 'axios';
 
 // Images
 import heartsImg from '../../../images/card-icons/hearts.png';
@@ -18,6 +19,7 @@ class Manager extends React.Component {
 		// Func Binds
 		this.themeClick = this.themeClick.bind(this);
 		this.subNavClick = this.subNavClick.bind(this);
+		this.createDeck = this.createDeck.bind(this);
 
 		// Refs
 		this.red = React.createRef();
@@ -32,13 +34,13 @@ class Manager extends React.Component {
 		this.customForm = React.createRef();
 
 		this.state = {
-			currentSubNav: 'Create', cardType: '', red: '', black: '', hearts: '', diamonds: '', clubs: '', spades: '', showCustom: false
+			currentSubNav: 'Create', deckType: '', showCustom: false
 		};
 	}
 
-	cardTypeClick(type) {
+	deckTypeClick(type) {
 		this.setState({
-			cardType: type
+			deckType: type
 		});
 	}
 
@@ -48,6 +50,71 @@ class Manager extends React.Component {
 		});
 	}
 
+	createDeck() {
+		let that = this;
+
+		let deckObject = null;
+		if (this.theme1.current.checked === true) {
+			deckObject = {
+				red: 'Women', black: 'Men', hearts: 'Good', clubs: 'Good', diamonds: 'Evil', spades: 'Evil'
+			};
+		} else if (this.theme2.current.checked === true) {
+			deckObject = {
+				red: 'Evil', black: 'Good', hearts: 'Women', clubs: 'Men', diamonds: 'Men', spades: 'Women'
+			};
+		} else if (this.custom.current.checked === true) {
+			if (!String.isEmpty(this.red.current.value) && !String.isEmpty(this.black.current.value) &&
+				!String.isEmpty(this.hearts.current.value) && !String.isEmpty(this.diamonds.current.value) &&
+				!String.isEmpty(this.clubs.current.value) && !String.isEmpty(this.spades.current.value)) {
+
+				deckObject = {
+					red: this.red.current.value, black: this.black.current.value, hearts: this.hearts.current.value, 
+					clubs: this.clubs.current.value, diamonds: this.diamonds.current.value, spades: this.spades.current.value
+				};
+			}
+		}
+
+		if (deckObject !== null) {
+			deckObject.deck_type = this.state.deckType;
+
+			axios({
+				url: `http://0.0.0.0:3001/api/v1/deck_infos`, 
+		        method: 'post',
+		        data: deckObject,
+		        headers: {
+		          'Content-Type': 'application/json',
+		          'X-User-Email': localStorage.getItem('email'),
+		          'X-User-Token': localStorage.getItem('authentication_token')
+		        }
+	        }).then(function (response) {
+				let authentication_token, email, username;
+				({authentication_token, email, username} = response.data);
+
+				localStorage.setItem('authentication_token', authentication_token);
+				localStorage.setItem('username', username);
+				localStorage.setItem('email', email);
+
+				sessionStorage.pushItem('alerts', {
+					type: 'success',
+					message: "You've successfully logged in!"
+				});
+
+				that.modalClose.current.click();
+				that.props.history.push('/');
+			}).catch(function (error) {
+				sessionStorage.pushItem('alerts', {
+					type: 'danger',
+					message: "Something went wrong. Please try again."
+				});
+			});
+		} else {
+			sessionStorage.pushItem('alerts', {
+				type: 'danger',
+				message: "Missing input! Please review your choices."
+			});
+		}
+	}
+
 	subNavClick(tabStr) {
 		this.setState({
 			currentSubNav: tabStr
@@ -55,8 +122,8 @@ class Manager extends React.Component {
 	}
 
 	render() {
-		const isLightSelected = classNames('card', 'bg-light', 'mb-3', { 'bg-active-light': this.state.cardType === 'light' });
-		const isDarkSelected = classNames('card', 'bg-dark', 'mb-3', 'text-white', { 'bg-active-dark': this.state.cardType === 'dark' });
+		const isLightSelected = classNames('card', 'bg-light', 'mb-3', { 'bg-active-light': this.state.deckType === 'light' });
+		const isDarkSelected = classNames('card', 'bg-dark', 'mb-3', 'text-white', { 'bg-active-dark': this.state.deckType === 'dark' });
 		const isCustomFormVisible = classNames({ 'hide-div': !this.state.showCustom });
 
 		return(
@@ -90,7 +157,7 @@ class Manager extends React.Component {
 
 					             	<div className="row">
 					             		<div className="col-3">
-							             	<div className={isLightSelected} onClick={this.cardTypeClick.bind(this, 'light')}>
+							             	<div className={isLightSelected} onClick={this.deckTypeClick.bind(this, 'light')}>
 											  <div className="card-header">
 											  	&nbsp;A
 											  	<img className="top-suit" alt="card-suit" src={heartsImg}/>
@@ -116,7 +183,7 @@ class Manager extends React.Component {
 										</div>
 
 										<div className="col-3">
-											<div className={isDarkSelected} onClick={this.cardTypeClick.bind(this, 'dark')}>
+											<div className={isDarkSelected} onClick={this.deckTypeClick.bind(this, 'dark')}>
 											  <div className="card-header">
 											  	&nbsp;A
 											  	<img className="top-suit" alt="card-suit" src={spadesWhiteImg}/>
@@ -152,14 +219,14 @@ class Manager extends React.Component {
 										  <input type="radio" id="customRadio1" name="customRadio" onClick={this.themeClick} ref={this.theme1} className="custom-control-input"/>
 										  <label className="custom-control-label" htmlFor="customRadio1">
 										  	<b>Color:</b> Men (Black), Women (Red) &nbsp;&nbsp; 
-										  	<b>Suit:</b> Men (Diamonds & Clubs), Women (Hearts & Spades)
+										  	<b>Suit:</b> Good (Hearts & Clubs), Evil (Diamonds & Spades)
 										  </label>
 										</div>
 										<div className="custom-control custom-radio">
 										  <input type="radio" id="customRadio2" name="customRadio" onClick={this.themeClick} ref={this.theme2} className="custom-control-input"/>
 										  <label className="custom-control-label" htmlFor="customRadio2">
 										  	<b>Color:</b> Good (Black), Evil (Red) &nbsp;&nbsp; 
-										  	<b>Suit:</b> Good (Hearts & Clubs), Evil (Diamonds & Spades)
+										  	<b>Suit:</b> Men (Diamonds & Clubs), Women (Hearts & Spades)
 										  </label>
 										</div>
 										<div className="custom-control custom-radio">
@@ -208,9 +275,10 @@ class Manager extends React.Component {
 										</div>
 									</div>
 
-									<button type="button" className="btn btn-danger">Create!</button>
+									<button type="button" onClick={this.createDeck} className="btn btn-danger">Create!</button>
 									<br/><br/><br/>
 					            </div>
+
 					            <div className={"tab-pane fade" + (this.state.currentSubNav === 'Edit' ? " active show" : "")} id="profile">
 					              <p>Food truck fixie locavore, accusamus mcsweeney's marfa nulla single-origin coffee squid. Exercitation +1 labore velit, blog sartorial PBR leggings next level wes anderson artisan four loko farm-to-table craft beer twee. Qui photo booth letterpress, commodo enim craft beer mlkshk aliquip jean shorts ullamco ad vinyl cillum PBR. Homo nostrud organic, assumenda labore aesthetic magna delectus mollit.</p>
 					            </div>

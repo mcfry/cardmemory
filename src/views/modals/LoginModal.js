@@ -15,14 +15,21 @@ class LoginModal extends React.Component {
 		this.loginForm = React.createRef();
 		this.username = React.createRef();
 		this.password = React.createRef();
+		this.alert = React.createRef();
 
 		// Func binds
-		this.attemptLogin = this.attemptLogin.bind(this);
 		this.resetModal = this.resetModal.bind(this);
+		this.attemptLogin = this.attemptLogin.bind(this);
 
 		this.state = {
 			lastLoginFailed: false
 		};
+	}
+
+	handleEnter = (event) => {
+		if (event.key === "Enter") {
+			this.attemptLogin();
+		}
 	}
 
 	resetModal() {
@@ -32,13 +39,21 @@ class LoginModal extends React.Component {
 		});
 	}
 
+	// Note: Functionality is limited and state is small, no need to refactor 
 	attemptLogin() {
 		let that = this;
 		if (this.username.current.value !== "" && this.password.current.value !== "") {
-			axios.post('http://0.0.0.0:3001/api/v1/sessions', {
-				username: that.username.current.value,
-				password: that.password.current.value
-			}).then(function (response) {
+			axios({
+		        url: `http://0.0.0.0:3001/api/v1/sessions`, 
+		        method: 'post',
+		        data: {
+		        	username: that.username.current.value,
+					password: that.password.current.value
+		        },
+		        headers: {
+		          'Content-Type': 'application/json'
+		        }
+		    }).then(function (response) {
 				let authentication_token, email, username;
 				({authentication_token, email, username} = response.data);
 
@@ -54,18 +69,26 @@ class LoginModal extends React.Component {
 				that.modalClose.current.click();
 				that.props.history.push('/');
 			}).catch(function (error) {
-				console.log(error);
+				that.setState({
+					lastLoginFailed: true
+				});
+				if (that.alert.current) {
+					that.alert.current.resetAlert();
+				}
 			});
 		} else {
 			this.setState({
 				lastLoginFailed: true
 			});
+			if (this.alert.current) {
+				this.alert.current.resetAlert();
+			}
 		}
 	}
 
 	render() {
 		const isAlert = this.state.lastLoginFailed ? 
-			<Alert alertType="danger" alertMessage="Oh snap! Change a few things up and try submitting again."/> : '';
+			<Alert alertType="danger" alertMessage="Oh snap! Information is incorrect." ref={this.alert} /> : '';
 
 		return (
 		  	<div id="login-modal" className="modal">
@@ -85,11 +108,11 @@ class LoginModal extends React.Component {
 			      	<form ref={this.loginForm}>
 				      	<div className="form-group">
 							<label htmlFor="username-input">Username</label>
-							<input type="text" className="form-control" id="username-input" placeholder="Username" ref={this.username}/>
+							<input type="text" className="form-control" onKeyPress={this.handleEnter} id="username-input" placeholder="Username" ref={this.username}/>
 						</div>
 						<div className="form-group">
 							<label htmlFor="password-input">Password</label>
-							<input type="password" className="form-control" id="password-input" placeholder="Password" ref={this.password}/>
+							<input type="password" className="form-control" onKeyPress={this.handleEnter} id="password-input" placeholder="Password" ref={this.password}/>
 						</div>
 					</form>
 			      </div>

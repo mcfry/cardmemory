@@ -1,6 +1,7 @@
 // Libraries
 import React from 'react';
 import { Link, NavLink, withRouter } from 'react-router-dom';
+import axios from 'axios';
 
 // Css
 import './NavbarInternal.css';
@@ -39,18 +40,35 @@ class NavbarInternal extends React.Component {
     }
   }
 
+  // Note: Functionality is limited and state is small, no need to refactor 
   logout() {
+    let that = this;
     if (this.state.loggedIn) {
-      localStorage.removeItem('username');
-      localStorage.removeItem('email');
-      localStorage.removeItem('authentication_token');
+      axios({
+        url: `http://0.0.0.0:3001/api/v1/sessions`, 
+        method: 'delete',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Email': localStorage.getItem('email'),
+          'X-User-Token': localStorage.getItem('authentication_token')
+        }
+      }).then(function (response) {
+        localStorage.removeItem('username');
+        localStorage.removeItem('email');
+        localStorage.removeItem('authentication_token');
 
-      localStorage.pushItem('alerts', {
-        type: 'success',
-        message: "You've successfully logged out."
+        sessionStorage.pushItem('alerts', {
+          type: 'success',
+          message: "You've successfully logged out."
+        });
+
+        that.props.history.push('/');
+      }).catch(function (error) {
+        sessionStorage.pushItem('alerts', {
+          type: 'danger',
+          message: "Could not log out."
+        });
       });
-
-      this.props.history.push('/');
     }
   }
 
