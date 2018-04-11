@@ -1,7 +1,7 @@
 // Libraries
 import React from 'react';
+import { observer, inject } from 'mobx-react';
 import { Link, NavLink, withRouter } from 'react-router-dom';
-import axios from 'axios';
 
 // Css
 import './NavbarInternal.css';
@@ -13,6 +13,7 @@ import playingCardsImg from '../../../images/card-icons/playing-cards.png';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
 
+@inject('User') @observer
 class NavbarInternal extends React.Component {
   constructor(props) {
     super(props);
@@ -26,48 +27,17 @@ class NavbarInternal extends React.Component {
   }
 
   isLoggedIn() {
-    let username = localStorage.getItem('username');
-    let email = localStorage.getItem('email');
-    let authentication_token = localStorage.getItem('authentication_token');
-
-    let loggedIn = false;
-    if (username && email && authentication_token) { loggedIn = true; }
-
-    if (this.state.loggedIn !== loggedIn) {
+    if (this.state.loggedIn !== this.props.User.isLoggedIn) {
       this.setState({
-        loggedIn: loggedIn
+        loggedIn: this.props.User.isLoggedIn
       });
     }
   }
 
-  // Note: Functionality is limited and state is small, no need to refactor 
   logout() {
-    let that = this;
     if (this.state.loggedIn) {
-      axios({
-        url: `http://0.0.0.0:3001/api/v1/sessions`, 
-        method: 'delete',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Email': localStorage.getItem('email'),
-          'X-User-Token': localStorage.getItem('authentication_token')
-        }
-      }).then(function (response) {
-        localStorage.removeItem('username');
-        localStorage.removeItem('email');
-        localStorage.removeItem('authentication_token');
-
-        sessionStorage.pushItem('alerts', {
-          type: 'success',
-          message: "You've successfully logged out."
-        });
-
-        that.props.history.push('/');
-      }).catch(function (error) {
-        sessionStorage.pushItem('alerts', {
-          type: 'danger',
-          message: "Could not log out."
-        });
+      this.props.User.logOut().then((success) => {
+        this.props.history.push('/');
       });
     }
   }

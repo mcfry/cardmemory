@@ -1,12 +1,13 @@
 // Libraries
 import React from "react";
+import { observer, inject } from 'mobx-react';
 import { withRouter } from "react-router-dom";
 import classNames from "classnames";
-import axios from 'axios';
 
 // Components
-import Alert from '../stateless/Alert';
+import Alert from '../basic_components/Alert';
 
+@inject('User') @observer
 class RegisterModal extends React.Component {
 	constructor(props) {
 		super(props);
@@ -113,45 +114,26 @@ class RegisterModal extends React.Component {
 		});
 	}
 
-	// Note: Functionality is limited and state is small, no need to refactor 
 	attemptToRegisterUser() {
-		if (this.username.current.value !== "" && this.email.current.value !== "" && this.state.passwordsValid) {
-			let that = this;
-			axios({
-		        url: `http://0.0.0.0:3001/users`, 
-		        method: 'post',
-		        data: {
-		        	username: that.username.current.value,
-					email: that.email.current.value,
-					password: that.password.current.value,
-					password_confirmation: that.confirmPassword.current.value
-		        },
-		        headers: {
-		          'Content-Type': 'application/json'
-		        }
-		    }).then(function (response) {
-				sessionStorage.pushItem('alerts', {
-					type: 'success',
-					message: "You've successfully registered, try signing in!"
-				});
-
-				that.modalClose.current.click();
-				that.props.history.push('/');
-			}).catch(function (error) {
-				that.setState({
-					userRegistered: false,lastRegisterFailed: true
-				});
-				if (that.alert.current) {
-					that.alert.current.resetAlert();
-				}
-			});
-		} else {
+		const { User } = this.props;
+		const failed = () => {
 			this.setState({
 				userRegistered: false, lastRegisterFailed: true
 			});
 			if (this.alert.current) {
 				this.alert.current.resetAlert();
 			}
+		};
+
+		if (this.state.usernameValid && this.state.emailValid && this.state.passwordsValid) {
+			User.create(this.username.current.value, this.email.current.value, this.password.current.value, this.confirmPassword.current.value).then((success) => {
+				this.modalClose.current.click();
+				this.props.history.push('/');
+			}).catch((error) => {
+				failed();
+			});
+		} else {
+			failed();
 		}
 	}
 

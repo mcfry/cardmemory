@@ -1,17 +1,27 @@
+// Libraries
 import React, { Component } from "react";
-import { Route, Switch } from 'react-router-dom';
+
+// Site-wide css
+import 'font-awesome/css/font-awesome.min.css';
 import './App.css';
+
+// Site-wide js
+
+
+/////////////////
+//  Begin App  //
+/////////////////
+
+// Routes
+import Routes from './routes/Routes';
 
 // Header/Footers
 import NavbarInternal from './views/main/header/NavbarInternal';
 
-// Components
-import Home from './views/main/home/Home';
-import Manager from './views/main/manager/Manager';
-import Practice from './views/main/practice/Practice';
-import About from './views/main/about/About';
-import Alert from './views/stateless/Alert';
+// Basic Components
+import Alert from './views/basic_components/Alert';
 
+// Root component + Layout
 class App extends Component {
   render() {
     const sessionAlerts = sessionStorage.getArrayAndClear("alerts");
@@ -27,13 +37,8 @@ class App extends Component {
       <div className="App">
         <NavbarInternal />
         <div className="AppContent">
-        
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route path="/manage-deck" component={Manager} />
-            <Route path="/practice" component={Practice} />
-            <Route path="/about" component={About} />
-          </Switch>
+
+          <Routes/>
 
           <div className="container-fluid">
             {alerts}

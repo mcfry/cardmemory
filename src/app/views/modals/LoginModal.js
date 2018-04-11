@@ -1,11 +1,12 @@
 // Libraries
 import React from "react";
+import { observer, inject } from 'mobx-react';
 import { withRouter } from "react-router-dom";
-import axios from 'axios';
 
 // Components
-import Alert from '../stateless/Alert';
+import Alert from '../basic_components/Alert';
 
+@inject('User') @observer
 class LoginModal extends React.Component {
 	constructor(props) {
 		super(props);
@@ -39,50 +40,26 @@ class LoginModal extends React.Component {
 		});
 	}
 
-	// Note: Functionality is limited and state is small, no need to refactor 
 	attemptLogin() {
-		let that = this;
-		if (this.username.current.value !== "" && this.password.current.value !== "") {
-			axios({
-		        url: `http://0.0.0.0:3001/api/v1/sessions`, 
-		        method: 'post',
-		        data: {
-		        	username: that.username.current.value,
-					password: that.password.current.value
-		        },
-		        headers: {
-		          'Content-Type': 'application/json'
-		        }
-		    }).then(function (response) {
-				let authentication_token, email, username;
-				({authentication_token, email, username} = response.data);
-
-				localStorage.setItem('authentication_token', authentication_token);
-				localStorage.setItem('username', username);
-				localStorage.setItem('email', email);
-
-				sessionStorage.pushItem('alerts', {
-					type: 'success',
-					message: "You've successfully logged in!"
-				});
-
-				that.modalClose.current.click();
-				that.props.history.push('/');
-			}).catch(function (error) {
-				that.setState({
-					lastLoginFailed: true
-				});
-				if (that.alert.current) {
-					that.alert.current.resetAlert();
-				}
-			});
-		} else {
+		const { User } = this.props;
+		const failed = () => {
 			this.setState({
 				lastLoginFailed: true
 			});
 			if (this.alert.current) {
 				this.alert.current.resetAlert();
 			}
+		};
+
+		if (this.username.current.value !== "" && this.password.current.value !== "") {
+			User.logIn(this.username.current.value, this.password.current.value).then((success) => {
+				this.modalClose.current.click(); // Simulate a click to trigger internal bootstrap js
+				this.props.history.push('/');
+			}).catch((error) => {
+				failed();
+			});
+		} else {
+			failed();
 		}
 	}
 
