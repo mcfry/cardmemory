@@ -13,7 +13,11 @@ import playingCardsImg from '../../../images/card-icons/playing-cards.png';
 import LoginModal from '../../modals/LoginModal';
 import RegisterModal from '../../modals/RegisterModal';
 
-@inject('User') @observer
+@withRouter @inject((RootStore) => {
+  return {
+    User: RootStore.UserStore
+  }
+}) @observer
 class NavbarInternal extends React.Component {
   constructor(props) {
     super(props);
@@ -85,12 +89,12 @@ class NavbarInternal extends React.Component {
       <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
         <img src={playingCardsImg} className="logo" alt="logo"/>
         <Link className="navbar-brand" to="/">Card Memory</Link>
-        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" 
-                aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-nav" 
+                aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        <div className="collapse navbar-collapse" id="navbarColor01">
+        <div className="collapse navbar-collapse" id="main-nav">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
               <NavLink className="nav-link" activeClassName="active" exact to="/">Home <span className="sr-only">(current)</span></NavLink>
@@ -113,4 +117,4 @@ class NavbarInternal extends React.Component {
   }
 }
 
-export default withRouter(NavbarInternal);
+export default NavbarInternal;

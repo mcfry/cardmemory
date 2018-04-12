@@ -7,7 +7,11 @@ import classNames from "classnames";
 // Components
 import Alert from '../basic_components/Alert';
 
-@inject('User') @observer
+@withRouter @inject((RootStore) => {
+	return {
+		User: RootStore.UserStore
+	}
+}) @observer
 class RegisterModal extends React.Component {
 	constructor(props) {
 		super(props);
@@ -254,4 +258,4 @@ class RegisterModal extends React.Component {
 	}
 }
 
-export default withRouter(RegisterModal);
+export default RegisterModal;

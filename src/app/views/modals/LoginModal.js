@@ -6,7 +6,11 @@ import { withRouter } from "react-router-dom";
 // Components
 import Alert from '../basic_components/Alert';
 
-@inject('User') @observer
+@withRouter @inject((RootStore) => {
+	return {
+		User: RootStore.UserStore
+	}
+}) @observer
 class LoginModal extends React.Component {
 	constructor(props) {
 		super(props);
@@ -106,4 +110,4 @@ class LoginModal extends React.Component {
 	}
 }
 
-export default withRouter(LoginModal);
+export default LoginModal;

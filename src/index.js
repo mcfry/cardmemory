@@ -5,7 +5,7 @@ import { Provider } from 'mobx-react';
 import registerServiceWorker from './registerServiceWorker';
 
 // Stores
-import Stores from './app/stores';
+import RootStore from './app/stores';
 
 // Main app component
 import App from './app/App';
@@ -55,7 +55,7 @@ Storage.prototype.getArrayAndClear = function(key) {
 
 // Hook into root
 ReactDOM.render(
-  <Provider {...Stores}>
+  <Provider {...RootStore}>
     <Router>
 	    <App />
     </Router>

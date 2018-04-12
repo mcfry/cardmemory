@@ -1,5 +1,7 @@
 // Libraries
 import React from "react";
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
 
 // Components
 import CreateManager from './CreateManager.js';
@@ -7,6 +9,12 @@ import CreateManager from './CreateManager.js';
 // Css
 import './Manager.css';
 
+@withRouter @inject((RootStore) => {
+	return {
+		User: RootStore.UserStore,
+		Deck: RootStore.DeckStore
+	}
+}) @observer
 class Manager extends React.Component {
 	constructor(props) {
 		super(props);
@@ -30,15 +38,25 @@ class Manager extends React.Component {
 			<div className="manager">
 				<ul className="nav nav-tabs">
 					<div className="container">
-			            <li className="nav-item pull-left">
-			              <a className={"nav-link" + (this.state.currentSubNav === 'Create' ? " active show" : "")} 
-			              	 onClick={this.subNavClick.bind(this, 'Create')} data-toggle="tab">Create</a>
-			            </li>
-
-			            <li className="nav-item pull-left">
-			              <a className={"nav-link" + (this.state.currentSubNav === 'Edit' ? " active show" : "")} 
-			              	 onClick={this.subNavClick.bind(this, 'Edit')} data-toggle="tab">Edit</a>
-			            </li>
+						{!this.props.User.isLoggedIn ? (
+							<li className="nav-item pull-left">
+				              <a className={"nav-link active show"} 
+				              	 onClick={this.subNavClick.bind(this, 'Info')} data-toggle="tab">Info</a>
+				            </li>
+				        ) : (
+					        <div>
+						        {this.props.Deck.deckObject === null ? (
+						            <li className="nav-item pull-left">
+						              <a className={"nav-link" + (this.state.currentSubNav === 'Create' ? " active show" : "")} 
+						              	 onClick={this.subNavClick.bind(this, 'Create')} data-toggle="tab">Create</a>
+						            </li>
+						        ) : ''}
+					            <li className="nav-item pull-left">
+					              <a className={"nav-link" + (this.state.currentSubNav === 'Edit' ? " active show" : "")} 
+					              	 onClick={this.subNavClick.bind(this, 'Edit')} data-toggle="tab">Edit</a>
+					            </li>
+					        </div>
+				        )}
 			        </div>
 		        </ul>
 
@@ -50,10 +68,21 @@ class Manager extends React.Component {
 			            </div>
 
 			            <div className="col-8">
-			            	<CreateManager isActive={this.state.currentSubNav === 'Create'} />
-			            	<div className={"tab-pane fade" + (this.state.currentSubNav === 'Edit' ? " active show" : "")} id="profile">
-				              <p>Food truck fixie locavore, accusamus mcsweeney's marfa nulla single-origin coffee squid. Exercitation +1 labore velit, blog sartorial PBR leggings next level wes anderson artisan four loko farm-to-table craft beer twee. Qui photo booth letterpress, commodo enim craft beer mlkshk aliquip jean shorts ullamco ad vinyl cillum PBR. Homo nostrud organic, assumenda labore aesthetic magna delectus mollit.</p>
-				            </div>
+			            	{!this.props.User.isLoggedIn ? (
+				            	<div className={"tab-pane fade active show"}>
+					              <p>You are not logged in! Please log in first to create and manage a deck.</p>
+					            </div>
+					        ) : (
+					        	<div>
+					        		{this.props.Deck.deckObject === null ?
+					            		<CreateManager isActive={this.state.currentSubNav === 'Create'} />
+					            	: ''}
+
+					            	<div className={"tab-pane fade" + (this.state.currentSubNav === 'Edit' ? " active show" : "")}>
+						              <p>blah</p>
+						            </div>
+						        </div>
+					        )}
 					    </div>
 
 			            <div className="col-2">

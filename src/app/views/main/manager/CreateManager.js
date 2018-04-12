@@ -1,7 +1,8 @@
 // Libraries
 import React from "react";
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
 import classNames from "classnames";
-import axios from 'axios';
 
 // Components
 import Card from '../../basic_components/Card';
@@ -15,6 +16,11 @@ import phelpsImg from '../../../images/phelps_ex.png';
 // Css
 import './Manager.css';
 
+@withRouter @inject((RootStore) => {
+	return {
+		Deck: RootStore.DeckStore
+	}
+}) @observer
 class Manager extends React.Component {
 	constructor(props) {
 		super(props);
@@ -40,21 +46,6 @@ class Manager extends React.Component {
 		};
 	}
 
-	isLoggedIn() {
-	    let username = localStorage.getItem('username');
-	    let email = localStorage.getItem('email');
-	    let authentication_token = localStorage.getItem('authentication_token');
-
-	    let loggedIn = false;
-	    if (username && email && authentication_token) { loggedIn = true; }
-
-	    if (this.state.loggedIn !== loggedIn) {
-	      this.setState({
-	        loggedIn: loggedIn
-	      });
-	    }
-	}
-
 	deckTypeClick(type) {
 		this.setState({
 			deckType: type
@@ -68,8 +59,6 @@ class Manager extends React.Component {
 	}
 
 	createDeck() {
-		let that = this;
-
 		let deckObject = null;
 		if (this.theme1.current.checked === true) {
 			deckObject = {
@@ -91,43 +80,13 @@ class Manager extends React.Component {
 			}
 		}
 
+		const { Deck } = this.props;
 		if (deckObject !== null) {
 			deckObject.deck_type = this.state.deckType;
 
-			axios({
-				url: `http://0.0.0.0:3001/api/v1/deck_infos`, 
-		        method: 'post',
-		        data: deckObject,
-		        headers: {
-		          'Content-Type': 'application/json',
-		          'X-User-Email': localStorage.getItem('email'),
-		          'X-User-Token': localStorage.getItem('authentication_token')
-		        }
-	        }).then(function (response) {
-				let authentication_token, email, username;
-				({authentication_token, email, username} = response.data);
-
-				localStorage.setItem('authentication_token', authentication_token);
-				localStorage.setItem('username', username);
-				localStorage.setItem('email', email);
-
-				sessionStorage.pushItem('alerts', {
-					type: 'success',
-					message: "You've successfully logged in!"
-				});
-
-				that.modalClose.current.click();
-				that.props.history.push('/');
-			}).catch(function (error) {
-				sessionStorage.pushItem('alerts', {
-					type: 'danger',
-					message: "Something went wrong. Please try again."
-				});
-			});
-		} else {
-			sessionStorage.pushItem('alerts', {
-				type: 'danger',
-				message: "Missing input! Please review your choices."
+			Deck.createDeck(deckObject).then((response) => {
+				this.modalClose.current.click();
+				this.props.history.push('/');
 			});
 		}
 	}
@@ -139,7 +98,7 @@ class Manager extends React.Component {
 
 		return(
 			<div id="myTabContent" className="tab-content">
-	            <div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")} id="home">
+	            <div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")}>
 	             	<h4>Card Type</h4>
 	             	<p>Choose a type of card layout.</p>
 
