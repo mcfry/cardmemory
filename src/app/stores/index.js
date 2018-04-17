@@ -1,10 +1,10 @@
 import User from './models/User';
-import Deck from './models/Deck';
+import Manager from './models/Manager';
 
 class RootStore {
 	constructor() {
 		this.UserStore = new User(this);
-		this.DeckStore = new Deck(this);
+		this.ManagerStore = new Manager(this);
 	}
 }
 

@@ -1,7 +1,5 @@
 // Libraries
 import React, { Component } from "react";
-import { observer, inject } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
 
 // Site-wide css
 import 'font-awesome/css/font-awesome.min.css';
@@ -20,25 +18,14 @@ import Routes from './routes/Routes';
 // Header/Footers
 import NavbarInternal from './views/main/header/NavbarInternal';
 
-// Basic Components
+// Components
 import Alert from './views/basic_components/Alert';
 
 // NOTE: Wrap all components being observed with withRouter, 
 //  issue: https://github.com/ReactTraining/react-router/blob/master/packages/react-router/docs/guides/blocked-updates.md
-// Root component & App Layout
-@withRouter @inject((RootStore) => {
-  return {
-    User: RootStore.UserStore
-  }
-}) @observer
-class App extends Component {
-  /* 
-   * Lifecycle Functions
-   */
-  componentWillMount() {
-    this.props.User.logIn();
-  }
 
+// Root component & App Layout
+class App extends Component {
   render() {
     const sessionAlerts = sessionStorage.getArrayAndClear("alerts");
     const alerts = sessionAlerts !== null ? (
@@ -49,26 +36,20 @@ class App extends Component {
       })
     ) : '';
 
-    const isLoading = this.props.User.isLoading;
-
     return (
       <div className="App">
-        {isLoading ? (
-          <i className="fa fa-circle-o-notch fa-spin"></i>
-        ) : (
-          <div>
-            <NavbarInternal />
-            <div className="AppContent">
+        <div>
+          <NavbarInternal />
+          <div className="AppContent">
 
-              <Routes/>
+            <Routes/>
 
-              <div className="container-fluid">
-                {alerts}
-              </div>
-
+            <div className="container-fluid">
+              {alerts}
             </div>
+
           </div>
-        )}
+        </div>
       </div>
     );
   }

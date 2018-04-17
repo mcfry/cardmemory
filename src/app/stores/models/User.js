@@ -1,3 +1,4 @@
+// Libraries
 import { observable, action } from 'mobx';
 import axios from 'axios';
 
@@ -5,12 +6,15 @@ class User {
 
 	constructor(rootStore) {
 		this.rootStore = rootStore;
+
+		this.logInFromStorage();
 	}
 	
 	/////////////////////
 	// Getters/Setters //
 	/////////////////////
 
+	@observable isInitialLoading = false;
 	@observable isLoading = false;
 	@observable isLoggedIn = false;
 
@@ -18,6 +22,9 @@ class User {
 		this.isLoading = isLoading;
 	}
 
+	@action setIsInitialLoading(isLoading) {
+		this.isInititalLoading = isLoading;
+	}
 
 	@action setIsLoggedIn(isLoggedIn) {
 		this.isLoggedIn = isLoggedIn;
@@ -26,6 +33,8 @@ class User {
 	/////////////////////
 	// Model Functions //
 	/////////////////////
+
+	// Public //
 
 	create(username, email, password, password_confirmation) {
 		this.setIsLoading(true);
@@ -43,67 +52,36 @@ class User {
 		          'Content-Type': 'application/json'
 		        }
 		    }).then((response) => {
-		    	this.setIsLoading(false);
-
 				sessionStorage.pushItem('alerts', {
 					type: 'success',
 					message: "You've successfully registered, try logging in!"
 				});
 
-				resolve(true);
+				resolve({
+					response: response,
+					transactions: () => {
+		    			this.setIsLoading(false);
+			    	}
+			    });
 			}).catch((error) => {
 				this.setIsLoading(false);
 
-				reject(false);
+				reject({
+					response: error,
+					transactions: () => {
+						this.setIsLoading(false);
+			    	}
+			    });
 			});
 		});
 	}
 
 	logIn(username = null, password = null) {
-		const usernameStore = localStorage.getItem('username');
-		const emailStore = localStorage.getItem('email');
-	    const tokenStore = localStorage.getItem('authentication_token');
-
-	    if (usernameStore && emailStore && tokenStore) {
-	      return this.logInFromStorage(emailStore, tokenStore);
-	    } else if (username && password) {
+	    if (username && password) {
 	      return this.createSession(username, password);
 	    } else if (this.isLoggedIn) { 
 	      return this.logOut();
 	    }
-	}
-
-	logInFromStorage() {
-		console.log(localStorage);
-
-		this.setIsLoading(true);
-		return new Promise((resolve, reject) => {
-			axios({
-		        url: `http://0.0.0.0:3001/api/v1/sessions`, 
-		        method: 'get',
-		        headers: {
-		          'Content-Type': 'application/json',
-		          'X-User-Email': localStorage.getItem('email'),
-		          'X-User-Token': localStorage.getItem('authentication_token')
-		        }
-		    }).then((response) => {
-		    	console.log(response.data);
-
-		    	this.setIsLoggedIn(true);
-		    	this.setIsLoading(false);
-
-		    	resolve(true);
-			}).catch((error) => {
-				this.setIsLoggedIn(false);
-				this.setIsLoading(false);
-
-				localStorage.removeItem('username');
-		        localStorage.removeItem('email');
-		        localStorage.removeItem('authentication_token');
-
-		        reject(false);
-			});
-		});
 	}
 
 	logOut() {
@@ -118,9 +96,6 @@ class User {
 		          'X-User-Token': localStorage.getItem('authentication_token')
 		        }
 	        }).then((response) => {
-	        	this.setIsLoggedIn(false);
-	        	this.setIsLoading(false);
-
 		        localStorage.removeItem('username');
 		        localStorage.removeItem('email');
 		        localStorage.removeItem('authentication_token');
@@ -130,58 +105,102 @@ class User {
 		          message: "You've successfully logged out."
 		        });
 
-		        resolve(true);
+		        resolve({
+					response: response,
+					transactions: () => {
+						this.setIsLoggedIn(false);
+	        			this.setIsLoading(false);
+			    	}
+			    });
 	        }).catch((error) => {
-	        	this.setIsLoggedIn(true);
-	        	this.setIsLoading(false);
-
-		        resolve(false);
+	        	// Don't allow react to catch failure
+	        	resolve({
+					response: error,
+					transactions: () => {
+	        			this.setIsLoading(false);
+			    	}
+			    });
 	        });
 	    });
 	}
 
-	createSession(username, password) {
-		this.setIsLoading(true);
-		return new Promise((resolve, reject) => {
+	// Private (Not Enforced) //
+
+		createSession(username, password) {
+			this.setIsLoading(true);
+			return new Promise((resolve, reject) => {
+				axios({
+			        url: `http://0.0.0.0:3001/api/v1/sessions`, 
+			        method: 'post',
+			        data: {
+			        	username: username,
+						password: password
+			        },
+			        headers: {
+			          'Content-Type': 'application/json'
+			        }
+			    }).then((response) => {
+					let authentication_token, email, username;
+					({authentication_token, email, username} = response.data);
+
+					localStorage.setItem('authentication_token', authentication_token);
+					localStorage.setItem('username', username);
+					localStorage.setItem('email', email);
+
+					sessionStorage.pushItem('alerts', {
+						type: 'success',
+						message: "You've successfully logged in!"
+					});
+
+					this.rootStore.ManagerStore.loadDeck();
+
+					resolve({
+						response: response,
+						transactions: () => {
+							this.setIsLoading(false);
+							this.setIsLoggedIn(true);
+				    	}
+				    });
+				}).catch((error) => {
+					reject({
+						response: error,
+						transactions: () => {
+							this.setIsLoggedIn(false);
+							this.setIsLoading(false);
+				    	}
+				    });
+				});
+			});
+		}
+
+		logInFromStorage() {
+			this.setIsInitialLoading(true);
 			axios({
 		        url: `http://0.0.0.0:3001/api/v1/sessions`, 
-		        method: 'post',
-		        data: {
-		        	username: username,
-					password: password
-		        },
+		        method: 'get',
 		        headers: {
-		          'Content-Type': 'application/json'
+		          'Content-Type': 'application/json',
+		          'X-User-Email': localStorage.getItem('email'),
+		          'X-User-Token': localStorage.getItem('authentication_token')
 		        }
 		    }).then((response) => {
-		    	this.setIsLoggedIn(true);
-		    	this.setIsLoading(false);
-
-				let authentication_token, email, username;
-				({authentication_token, email, username} = response.data);
-
-				localStorage.setItem('authentication_token', authentication_token);
-				localStorage.setItem('username', username);
-				localStorage.setItem('email', email);
-
-				sessionStorage.pushItem('alerts', {
-					type: 'success',
-					message: "You've successfully logged in!"
-				});
-
-				resolve(true);
+		    	this.rootStore.ManagerStore.loadDeck();
+				this.setIsLoggedIn(true);
+    			this.setIsInitialLoading(false);
 			}).catch((error) => {
-				this.setIsLoggedIn(false);
-				this.setIsLoading(false);
+				localStorage.removeItem('username');
+		        localStorage.removeItem('email');
+		        localStorage.removeItem('authentication_token');
 
-				reject(false);
+				this.setIsLoggedIn(false);
+				this.setIsInitialLoading(false);
 			});
-		});
-	}
+		}
 
 	/////////////////////
 	//  Model Helpers  //
 	/////////////////////
+
 }
 
 export default User;

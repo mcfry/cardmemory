@@ -22,3 +22,38 @@
 .hide-div {
 	display: none;
 }
+
+.list-group-item {
+	border-radius: 0px !important;
+	height: 45px;
+	cursor: pointer;
+}
+
+.list-group-item-center {
+	text-align: center;
+}
+
+.list-group-item.active {
+	background-color: #ff3232;
+	border-color: #ff3232;
+	color: #fff !important;
+}
+
+.col-horiz-reduce-pad {
+	padding-left: 1px;
+	padding-right: 0px;
+}
+
+.card-nav-suit {
+	height: 16px;
+	width: 16px;
+}
+
+.diamond-list-group {
+	line-height: 1.4;
+}
+
+a:not([href]):not([tabindex]) {
+	/* color: inherit; */
+	text-decoration: none;
+}

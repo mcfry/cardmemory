@@ -3,11 +3,11 @@
 }
 
 .bg-active-light, 
-.bg-light:hover {
+.bg-light-hover:hover {
 	box-shadow: 0px 0px 2px 4px rgba(50, 153, 255, 0.3);
 }
 .bg-active-dark, 
-.bg-dark:hover {
+.bg-dark-hover:hover {
 	box-shadow: 0px 0px 6px 1px #3299FF;
 }
 
@@ -37,4 +37,8 @@
 
 .col-form-label {
 	font-size: 14px;
+}
+
+.card-animate {
+  -vendor-animation-duration: 2s;
 }

@@ -1,5 +1,6 @@
 // Libraries
 import React from 'react';
+import { transaction } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { Link, NavLink, withRouter } from 'react-router-dom';
 
@@ -24,41 +25,24 @@ class NavbarInternal extends React.Component {
 
     // Func binds
     this.logout = this.logout.bind(this);
-
-    this.state = {
-      loggedIn: false
-    };
-  }
-
-  isLoggedIn() {
-    if (this.state.loggedIn !== this.props.User.isLoggedIn) {
-      this.setState({
-        loggedIn: this.props.User.isLoggedIn
-      });
-    }
   }
 
   logout() {
-    if (this.state.loggedIn) {
-      this.props.User.logOut().then((success) => {
-        this.props.history.push('/');
+    if (this.props.User.isLoggedIn) {
+      this.props.User.logOut().then((response) => {
+        transaction(() => {
+          response.transactions();
+          this.props.history.push('/');
+        });
+      }).catch((error) => {
+        console.log(error.response);
       });
     }
   }
 
-  /* 
-   * Lifecycle Functions
-   */
-  componentWillMount() {
-    this.isLoggedIn();
-  }
-
-  componentWillReceiveProps() {
-    this.isLoggedIn();
-  }
-
   render () {
-    const loginNav = this.state.loggedIn ? (
+    //this.props.User.isLoading
+    const loginNav = this.props.User.isLoggedIn ? (
       <ul className="navbar-nav">
         <li className="nav-item">
           <a className="nav-link active">{localStorage.getItem('username')}</a>
@@ -68,8 +52,8 @@ class NavbarInternal extends React.Component {
           <a className="nav-link" onClick={this.logout}>Logout</a>
         </li>
       </ul>
-    ) : (
-      <div>
+    ) : (!this.props.User.isInitialLoading ? (
+      <React.Fragment>
         <ul className="navbar-nav">
           <li className="nav-item">
             <a className="nav-link" data-toggle="modal" data-target="#login-modal">Login</a>
@@ -82,8 +66,10 @@ class NavbarInternal extends React.Component {
 
         <LoginModal/>
         <RegisterModal/>
-      </div>
-    );
+      </React.Fragment>
+    ) : (
+      ''
+    ));
 
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
@@ -101,9 +87,6 @@ class NavbarInternal extends React.Component {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" activeClassName="active" to="/manage-deck">Manager</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" activeClassName="active" to="/practice">Practice</NavLink>
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" activeClassName="active" to="/about">About</NavLink>

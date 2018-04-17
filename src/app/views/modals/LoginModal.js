@@ -1,5 +1,6 @@
 // Libraries
 import React from "react";
+import { transaction } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from "react-router-dom";
 
@@ -56,11 +57,17 @@ class LoginModal extends React.Component {
 		};
 
 		if (this.username.current.value !== "" && this.password.current.value !== "") {
-			User.logIn(this.username.current.value, this.password.current.value).then((success) => {
-				this.modalClose.current.click(); // Simulate a click to trigger internal bootstrap js
-				this.props.history.push('/');
+			User.logIn(this.username.current.value, this.password.current.value).then((status) => {
+				transaction(() => {
+					status.transactions();
+					this.modalClose.current.click(); // Simulate a click to trigger internal bootstrap js
+					this.props.history.push('/');
+				});
 			}).catch((error) => {
-				failed();
+				transaction(() => {
+					error.transactions();
+					failed();
+				});
 			});
 		} else {
 			failed();
@@ -83,20 +90,19 @@ class LoginModal extends React.Component {
 			        </button>
 			      </div>
 
-			      <div className="modal-body">
-			      	{isAlert}
-
-			      	<form ref={this.loginForm}>
-				      	<div className="form-group">
-							<label htmlFor="username-input">Username</label>
-							<input type="text" className="form-control" onKeyPress={this.handleEnter} id="username-input" placeholder="Username" ref={this.username}/>
-						</div>
-						<div className="form-group">
-							<label htmlFor="password-input">Password</label>
-							<input type="password" className="form-control" onKeyPress={this.handleEnter} id="password-input" placeholder="Password" ref={this.password}/>
-						</div>
-					</form>
-			      </div>
+			        <div className="modal-body">
+		      			{isAlert}
+				      	<form ref={this.loginForm}>
+					      	<div className="form-group">
+								<label htmlFor="username-input">Username</label>
+								<input type="text" className="form-control" onKeyPress={this.handleEnter} id="username-input" placeholder="Username" ref={this.username}/>
+							</div>
+							<div className="form-group">
+								<label htmlFor="password-input">Password</label>
+								<input type="password" className="form-control" onKeyPress={this.handleEnter} id="password-input" placeholder="Password" ref={this.password}/>
+							</div>
+						</form>
+			   	    </div>
 
 			      <div className="modal-footer">
 			        <button type="button" className="btn btn-primary" onClick={this.attemptLogin}>Login</button>

@@ -1,5 +1,6 @@
 // Libraries
 import React from "react";
+import { transaction } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from "react-router-dom";
 import classNames from "classnames";
@@ -130,11 +131,17 @@ class RegisterModal extends React.Component {
 		};
 
 		if (this.state.usernameValid && this.state.emailValid && this.state.passwordsValid) {
-			User.create(this.username.current.value, this.email.current.value, this.password.current.value, this.confirmPassword.current.value).then((success) => {
-				this.modalClose.current.click();
-				this.props.history.push('/');
+			User.create(this.username.current.value, this.email.current.value, this.password.current.value, this.confirmPassword.current.value).then((response) => {
+				transaction(() => {
+					response.transactions();
+					this.modalClose.current.click();
+					this.props.history.push('/');
+				});
 			}).catch((error) => {
-				failed();
+				transaction(() => {
+					failed();
+					error.transactions();
+				});
 			});
 		} else {
 			failed();

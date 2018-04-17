@@ -18,7 +18,8 @@ import './Manager.css';
 
 @withRouter @inject((RootStore) => {
 	return {
-		Deck: RootStore.DeckStore
+		User: RootStore.UserStore,
+		Manager: RootStore.ManagerStore
 	}
 }) @observer
 class Manager extends React.Component {
@@ -42,7 +43,7 @@ class Manager extends React.Component {
 		this.customForm = React.createRef();
 
 		this.state = {
-			loggedIn: false, currentSubNav: 'Create', deckType: '', showCustom: false
+			deckType: '', showCustom: false
 		};
 	}
 
@@ -80,37 +81,33 @@ class Manager extends React.Component {
 			}
 		}
 
-		const { Deck } = this.props;
+		const { Manager } = this.props;
 		if (deckObject !== null) {
 			deckObject.deck_type = this.state.deckType;
-
-			Deck.createDeck(deckObject).then((response) => {
-				this.modalClose.current.click();
-				this.props.history.push('/');
-			});
+			Manager.createDeck(deckObject);
 		}
 	}
 
 	render() {
-		const isLightSelected = classNames('card', 'bg-light', 'mb-3', { 'bg-active-light': this.state.deckType === 'light' });
-		const isDarkSelected = classNames('card', 'bg-dark', 'mb-3', 'text-white', { 'bg-active-dark': this.state.deckType === 'dark' });
+		const isLightSelected = classNames('card', 'bg-light', 'bg-light-hover', 'mb-3', { 'bg-active-light': this.state.deckType === 'light' });
+		const isDarkSelected = classNames('card', 'bg-dark', 'bg-dark-hover', 'mb-3', 'text-white', { 'bg-active-dark': this.state.deckType === 'dark' });
 		const isCustomFormVisible = classNames({ 'hide-div': !this.state.showCustom });
 
 		return(
-			<div id="myTabContent" className="tab-content">
+			<div id="create-deck-tab" className="tab-content">
 	            <div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")}>
 	             	<h4>Card Type</h4>
 	             	<p>Choose a type of card layout.</p>
 
 	             	<div className="row">
 	             		<div className="col-3">
-							<Card klasses={isLightSelected} clickHandler={this.deckTypeClick.bind(this, 'light')} cardTitle="Light card example" 
+							<Card klasses={isLightSelected} clickHandler={this.deckTypeClick.bind(this, 'light')} cardDenom={'Ace'} cardTitle="Light card example" 
 								  cardSuitImg={heartsImg} cardImg={phelpsImg} cardImgAlt="phelps" cardName="Michael Phelps" 
 								  action1="Swimming" action2="Smoking kush" />
 						</div>
 
 						<div className="col-3">
-							<Card klasses={isDarkSelected} clickHandler={this.deckTypeClick.bind(this, 'dark')} cardTitle="Dark card example" 
+							<Card klasses={isDarkSelected} clickHandler={this.deckTypeClick.bind(this, 'dark')} cardDenom={'Ace'} cardTitle="Dark card example" 
 								  cardSuitImg={spadesWhiteImg} cardImg={usainBoltImg} cardImgAlt="usain-bolt" cardName="Usain Bolt" 
 								  action1="Running" action2="Jumping real high" />
 						</div>
