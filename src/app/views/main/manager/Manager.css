@@ -57,3 +57,310 @@ a:not([href]):not([tabindex]) {
 	/* color: inherit; */
 	text-decoration: none;
 }
+
+.practice-button-start {
+	width: 200px;
+}
+
+.kitchen-mem-palace {
+	width: 50%;
+	min-width: 560px;
+	height: 380px;
+	background-image: url('../../../images/kitchen-mem-palace.jpg');
+	-webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+.living-room-mem-palace {
+	width: 50%;
+	min-width: 560px;
+	height: 380px;
+	background-image: url('../../../images/living-room-mem-palace.jpg');
+	-webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+.mini-card {
+	height: 25px;
+	width: 16px;
+}
+
+.mini-card-text-single {
+	margin-top: 5px;
+	margin-left: 4px;
+	font-size: 10px;
+}
+
+.mini-card-text-double {
+	margin-top: 5px;
+	margin-left: 1px;
+	font-size: 10px;
+}
+
+.kitchen0 {
+	margin-top: 4px;
+	margin-left: 65px;
+}
+
+.kitchen1 {
+	margin-top: 85px;
+	margin-left: 40px;
+}
+
+.kitchen2 {
+	margin-top: 85px;
+	margin-left: 98px;
+}
+
+.kitchen3 {
+	margin-top: 125px;
+	margin-left: 164px;
+}
+
+.kitchen4 {
+	margin-top: 85px;
+	margin-left: 164px;
+}
+
+.kitchen5 {
+	margin-top: 45px;
+	margin-left: 164px;
+}
+
+.kitchen6 {
+	margin-top: 65px;
+	margin-left: 235px;
+}
+
+.kitchen7 {
+	margin-top: 65px;
+	margin-left: 310px;
+}
+
+.kitchen8 {
+	margin-top: 125px;
+	margin-left: 385px;
+}
+
+.kitchen9 {
+	margin-top: 85px;
+	margin-left: 385px;
+}
+
+.kitchen10 {
+	margin-top: 45px;
+	margin-left: 385px;
+}
+
+.kitchen11 {
+	margin-top: 4px;
+	margin-left: 480px;
+}
+
+.kitchen12 {
+	margin-top: 85px;
+	margin-left: 450px;
+}
+
+.kitchen13 {
+	margin-top: 85px;
+	margin-left: 508px;
+}
+
+.kitchen14 {
+	margin-top: 205px;
+	margin-left: 480px;
+}
+
+.kitchen15 {
+	margin-top: 205px;
+	margin-left: 65px;
+}
+
+.kitchen16 {
+	margin-top: 246px;
+	margin-left: 75px;
+}
+
+.kitchen17 {
+	margin-top: 286px;
+	margin-left: 75px;
+}
+
+.kitchen18 {
+	margin-top: 334px;
+	margin-left: 75px;
+}
+
+.kitchen19 {
+	margin-top: 286px;
+	margin-left: 173px;
+}
+
+.kitchen20 {
+	margin-top: 306px;
+	margin-left: 235px;
+}
+
+.kitchen21 {
+	margin-top: 306px;
+	margin-left: 315px;
+}
+
+.kitchen22 {
+	margin-top: 286px;
+	margin-left: 376px;
+}
+
+.kitchen23 {
+	margin-top: 246px;
+	margin-left: 475px;
+}
+
+.kitchen24 {
+	margin-top: 286px;
+	margin-left: 475px;
+}
+
+.kitchen25 {
+	margin-top: 334px;
+	margin-left: 475px;
+}
+
+.living26 {
+	margin-top: 334px;
+	margin-left: 115px;
+}
+
+.living27 {
+	margin-top: 254px;
+	margin-left: 165px;
+}
+
+.living28 {
+	margin-top: 244px;
+	margin-left: 95px;
+}
+
+.living29 {
+	margin-top: 154px;
+	margin-left: 25px;
+}
+
+.living30 {
+	margin-top: 154px;
+	margin-left: 75px;
+}
+
+.living31 {
+	margin-top: 224px;
+	margin-left: 145px;
+}
+
+.living32 {
+	margin-top: 208px;
+	margin-left: 168px;
+}
+
+.living33 {
+	margin-top: 154px;
+	margin-left: 112px;
+}
+
+.living34 {
+	margin-top: 30px;
+	margin-left: 170px;
+}
+
+.living35 {
+	margin-top: 115px;
+	margin-left: 175px;
+}
+
+.living36 {
+	margin-top: 115px;
+	margin-left: 203px;
+}
+
+.living37 {
+	margin-top: 115px;
+	margin-left: 230px;
+}
+
+.living38 {
+	margin-top: 30px;
+	margin-left: 288px;
+}
+
+.living39 {
+	margin-top: 145px;
+	margin-left: 288px;
+}
+
+.living40 {
+	margin-top: 205px;
+	margin-left: 288px;
+}
+
+.living41 {
+	margin-top: 115px;
+	margin-left: 345px;
+}
+
+.living42 {
+	margin-top: 115px;
+	margin-left: 373px;
+}
+
+.living43 {
+	margin-top: 115px;
+	margin-left: 402px;
+}
+
+.living44 {
+	margin-top: 70px;
+	margin-left: 512px;
+}
+
+.living45 {
+	margin-top: 210px;
+	margin-left: 365px;
+}
+
+.living46 {
+	margin-top: 217px;
+	margin-left: 388px;
+}
+
+.living47 {
+	margin-top: 210px;
+	margin-left: 412px;
+}
+
+.living48 {
+	margin-top: 225px;
+	margin-left: 437px;
+}
+
+.living49 {
+	margin-top: 242px;
+	margin-left: 475px;
+}
+
+.living50 {
+	margin-top: 285px;
+	margin-left: 458px;
+}
+
+.living51 {
+	margin-top: 295px;
+	margin-left: 358px;
+}
+
+.background-card {
+	position: absolute;
+}

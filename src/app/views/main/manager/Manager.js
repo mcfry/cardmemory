@@ -6,6 +6,7 @@ import { withRouter } from 'react-router-dom';
 // Components
 import CreateManager from './CreateManager.js';
 import EditManager from './EditManager.js';
+import PracticeManager from './PracticeManager.js';
 import Loading from '../../basic_components/Loading.js';
 
 // Css
@@ -90,7 +91,10 @@ class Manager extends React.Component {
 							        		{this.props.Manager.deckObject === null ?
 							            		<CreateManager isActive={this.props.Manager.currentSubNav === 'Create'} />
 							            	: 
-												<EditManager isActive={this.props.Manager.currentSubNav === 'Edit'} />
+							            		<React.Fragment>
+													<EditManager isActive={this.props.Manager.currentSubNav === 'Edit'} />
+													<PracticeManager isActive={this.props.Manager.currentSubNav === 'Practice'} />
+												</React.Fragment>
 											}
 								        </React.Fragment>
 								    )}
