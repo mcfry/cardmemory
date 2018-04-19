@@ -27,7 +27,7 @@ Storage.prototype.pushItem = function(key, value) {
 
   // Push new value and stringify array
   existing.push(value);
-    return this.setItem(key, JSON.stringify(existing));
+  return this.setItem(key, JSON.stringify(existing));
 };
 
 // Retrieve pseudo array object

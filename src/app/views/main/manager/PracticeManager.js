@@ -7,6 +7,7 @@ import classNames from "classnames";
 
 // Components
 import Card from '../../basic_components/Card';
+import Timer from '../../basic_components/Timer';
 
 // Images
 import heartsImg from '../../../images/card-icons/hearts.png';
@@ -41,6 +42,7 @@ class Manager extends React.Component {
 
 		// refs
 		this.selectNumber = React.createRef();
+		this.timer = React.createRef();
 
 		// funcs
 		this.getCardSuitImage.bind(this);
@@ -137,8 +139,15 @@ class Manager extends React.Component {
 				type: 'error',
 				message: "You must select a number of cards to practice first!"
 			});
+
+			if (this.timer.current) {
+				this.timer.current.stopTimer();
+			}
 		} else {
 			this.inProgress = true;
+			if (this.timer.current) {
+				this.timer.current.resetTimer();
+			}
 		}
 	}
 
@@ -179,6 +188,8 @@ class Manager extends React.Component {
 			<div id="edit-deck-tab" className="tab-content">
 				<div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")}>
 
+					<Timer ref={this.timer}/>
+
 					<div className="container">
 						<div className="row">
 							{!this.inProgress ? (
@@ -199,6 +210,8 @@ class Manager extends React.Component {
 									<button type="button" onClick={this.startPractice.bind(this)} className="btn btn-primary btn-danger practice-button-start">Go!</button>
 								</div>
 							) : (
+
+
 								<React.Fragment>
 									<div className="container">
 										<div className="kitchen-mem-palace mx-auto">
