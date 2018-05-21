@@ -226,22 +226,22 @@ class Manager extends React.Component {
 						            	<div className="row">
 						            		<div className="col-md-6">
 								            	<div className="form-group">
-													<label htmlFor="username-input">Card name</label>
+													<label htmlFor="cardname-input">Card name</label>
 													<input type="text" className="form-control" id="cardname-input" onChange={this.editCard.bind(this)} placeholder="Card name" ref={this.cardName}/>
 												</div>
 												<div className="form-group">
-													<label htmlFor="username-input">Action1</label>
+													<label htmlFor="action1-input">Action1</label>
 													<input type="text" className="form-control" id="action1-input" onChange={this.editCard.bind(this)} placeholder="Action name" ref={this.action1}/>
 												</div>
 											</div>
 
 											<div className="col-md-6">
 								            	<div className="form-group">
-													<label htmlFor="username-input">Image URL</label>
+													<label htmlFor="image-url-input">Image URL</label>
 													<input type="text" className="form-control" id="image-url-input" onChange={this.editCard.bind(this)} placeholder="URL" ref={this.imageUrl}/>
 												</div>
 												<div className="form-group">
-													<label htmlFor="username-input">Action2</label>
+													<label htmlFor="action2-input">Action2</label>
 													<input type="text" className="form-control" id="action2-input" onChange={this.editCard.bind(this)} placeholder="Action name" ref={this.action2}/>
 												</div>
 											</div>

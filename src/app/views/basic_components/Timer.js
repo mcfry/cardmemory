@@ -1,6 +1,5 @@
 // Libraries
 import React from "react";
-import classNames from "classnames";
 
 // Css
 import './Timer.css';
@@ -10,7 +9,7 @@ class Timer extends React.Component {
 		super(props);
 
 		this.state = {
-			timer: null, counter: 0
+			timer: null, last_count: null, counter: 0
 		};
 	}
 
@@ -22,13 +21,13 @@ class Timer extends React.Component {
 	resetTimer() {
 		this.stopTimer();
 		this.setState({counter: 0});
-		this.startTimer();
 	}
 
 	stopTimer() {
 		if (this.state.timer !== null) {
-			this.clearInterval(this.state.timer);
+			clearInterval(this.state.timer);
 		}
+		this.setState({last_count: this.state.counter});
 	}
 
 	componentWillUnmount() {
@@ -36,7 +35,6 @@ class Timer extends React.Component {
 	}
 
 	tick() {
-		console.log(this.state);
 	    this.setState({
 	        counter: this.state.counter + 1
 	    });
@@ -44,8 +42,11 @@ class Timer extends React.Component {
 
 	render () {
 		return (
-			<div className="timer">
-			  <i className="fa fa-clock-o"></i>&nbsp;{`${Math.floor(this.state.counter/60)}:${this.state.counter < 10 ? '0'+this.state.counter : this.state.counter}`}
+			<div className="timer timer-text">
+			  <i className="fa fa-clock-o"></i>&nbsp;
+			  <span>
+			  	{`${Math.floor(this.state.counter/60)}:${(this.state.counter%60) < 10 ? '0'+(this.state.counter%60) : (this.state.counter%60)}`}
+			  </span>
 			</div>
 		);
 	}

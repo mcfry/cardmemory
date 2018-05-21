@@ -87,6 +87,7 @@ a:not([href]):not([tabindex]) {
 .mini-card {
 	height: 25px;
 	width: 16px;
+	border-radius: 3px;
 }
 
 .mini-card-text-single {
@@ -99,6 +100,41 @@ a:not([href]):not([tabindex]) {
 	margin-top: 5px;
 	margin-left: 1px;
 	font-size: 10px;
+}
+
+.background-card {
+	position: absolute;
+}
+
+.next-card-go {
+	position: absolute;
+	margin-top: -260px;
+	margin-left: 500px;
+}
+
+.card-memory-main {
+	min-height: 480px;
+}
+
+.recall {
+	margin-top: 150px;
+}
+
+.mistakes {
+	text-align: center;
+}
+
+.mistake {
+	color: red;
+	font-size: 20px;
+	padding: 0px 3px 0px 3px;
+
+}
+
+.timer-bar {
+	padding: 15px;
+	width: 134px;
+/*	height: 170px;*/
 }
 
 .kitchen0 {
@@ -359,8 +395,4 @@ a:not([href]):not([tabindex]) {
 .living51 {
 	margin-top: 295px;
 	margin-left: 358px;
-}
-
-.background-card {
-	position: absolute;
 }

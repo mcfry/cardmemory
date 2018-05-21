@@ -1,5 +1,10 @@
 .card {
 	width: 290px;
+	border-radius: 8px;
+}
+
+.card.no-border {
+	border-radius: 0px;
 }
 
 .bg-active-light, 
@@ -40,5 +45,5 @@
 }
 
 .card-animate {
-  -vendor-animation-duration: 2s;
+  -vendor-animation-duration: 1s;
 }
