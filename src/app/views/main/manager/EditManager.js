@@ -4,6 +4,7 @@ import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import classNames from "classnames";
+import LZString from 'lz-string';
 
 // Components
 import Card from '../../basic_components/Card';
@@ -24,7 +25,8 @@ import 'animate.css/animate.min.css';
 
 @withRouter @inject((RootStore) => {
 	return {
-		Manager: RootStore.ManagerStore
+		Manager: RootStore.ManagerStore,
+		Alert: RootStore.AlertStore
 	}
 }) @observer
 class Manager extends React.Component {
@@ -44,6 +46,7 @@ class Manager extends React.Component {
 		this.imageUrl = React.createRef();
 		this.action1 = React.createRef();
 		this.action2 = React.createRef();
+		this.cardsUpload = React.createRef();
 
 		// funcs
 		this.getCardSuitImage.bind(this);
@@ -73,8 +76,10 @@ class Manager extends React.Component {
 		this.setCurrentCard(this.currentSuit, denom);
 	}
 
-	setCurrentCard(suit, denom) {
-		this.cardAnimState = 'bounceOutLeft';
+	setCurrentCard(suit, denom, first=false) {
+		if (first === false)
+			this.cardAnimState = 'bounceOutLeft';
+
 		setTimeout(() => {
 			const suitNumeric = this.suitsEnum[suit];
 			const denomNumeric = this.denomsEnum[denom];
@@ -82,10 +87,15 @@ class Manager extends React.Component {
 				if (this.props.Manager.deckObject.cards[suitNumeric][denomNumeric] !== undefined) {
 					const cardObj = this.props.Manager.deckObject.cards[suitNumeric][denomNumeric];
 
-					this.imageUrl.current.value = cardObj.image_url;
-					this.cardName.current.value = cardObj.name;
-					this.action1.current.value = cardObj.action1;
-					this.action2.current.value = cardObj.action2;
+					try {
+						this.imageUrl.current.value = cardObj.image_url;
+						this.cardName.current.value = cardObj.name;
+						this.action1.current.value = cardObj.action1;
+						this.action2.current.value = cardObj.action2;
+					} catch(e) {
+						// Not mounted because of page switching and timeout, will rerun
+						// when switching back
+					}
 				} else {
 					this.cardForm.current.reset();
 				}
@@ -123,25 +133,78 @@ class Manager extends React.Component {
 		}
 	}
 
-	editCard() {
-		const suitNumeric = this.suitsEnum[this.currentSuit];
-		const denomNumeric = this.denomsEnum[this.currentDenom];
+	editCard(fieldType, event) {
+		function updateCurrentCard(fieldType, value) {
+			const suitNumeric = this.suitsEnum[this.currentSuit];
+			const denomNumeric = this.denomsEnum[this.currentDenom];
 
-		// Last level doesn't need to be observable, just PO..
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric] = {
-			image_url: this.imageUrl.current.value,
-		    name: this.cardName.current.value,
-		    action1: this.action1.current.value,
-		    action2: this.action2.current.value
-		};
+			// Last level doesn't need to be observable, just PO..
+			this.props.Manager.deckObject.cards[suitNumeric][denomNumeric][fieldType] = value;
+		}
+
+		if (fieldType === 'name') {
+			if (event.target.value.length < 15) {
+				updateCurrentCard.call(this, fieldType, event.target.value);
+			} else {
+				updateCurrentCard.call(this, fieldType, event.target.value.substring(0, 15));
+				this.cardName.current.value = event.target.value.substring(0, 15);
+			}
+		} else if (fieldType === 'action1') {
+			if (event.target.value.length < 25) {
+				updateCurrentCard.call(this, fieldType, event.target.value);
+			} else {
+				updateCurrentCard.call(this, fieldType, event.target.value.substring(0, 25));
+			}
+		} else if (fieldType === 'action2') {
+			if (event.target.value.length < 25) {
+				updateCurrentCard.call(this, fieldType, event.target.value);
+			} else {
+				updateCurrentCard.call(this, fieldType, event.target.value.substring(0, 25));
+			}
+		} else if (fieldType === 'image_url') {
+			updateCurrentCard.call(this, fieldType, event.target.value);
+		} else {
+			event.preventDefault();
+		}
+	}
+
+	editCardKeyDown(ref, event) {
+		ref.current.setAttribute('data-previousvalue', event.target.value);
 	}
 
 	updateCards() {
 		this.props.Manager.updateCards();
 	}
 
+	exportCards() {
+		this.props.Manager.exportCards();
+	}
+
+	uploadCards() {
+		this.cardsUpload.current.click(); // Trigger event
+	}
+
 	componentDidMount() {
-		this.setCurrentCard(this.currentSuit, this.currentDenom);
+		let that = this;
+		this.setCurrentCard(this.currentSuit, this.currentDenom, true);
+
+		// Use HTML5 File Api for client-side upload
+		function onChange(event) {
+	        let reader = new FileReader();
+		    reader.onload = (event) => {
+		    	try {
+			        let cards = JSON.parse(LZString.decompressFromUTF16(event.target.result));
+			        that.props.Manager.uploadCards(cards);
+			    } catch(e) {
+			    	this.props.Alert.pushItem('alerts', {
+						type: 'danger',
+						message: "Invalid file. File must be a correctly formatted JSON file."
+					});
+			    }
+		    };
+	        reader.readAsText(event.target.files[0]);
+	    }
+	    this.cardsUpload.current.addEventListener('change', onChange);
 	}
 
 	render() {
@@ -203,8 +266,16 @@ class Manager extends React.Component {
 								 	)}
 								 	&nbsp;<span className="align-suit-text">Spades</span>
 								  </a>
+								</div>
+								<div className="list-group">
 								  <a className="list-group-item list-group-item-action" onClick={this.updateCards.bind(this)}>
 								 	<i className="fa fa-save"></i>&nbsp;<span className="align-suit-text">Save Deck</span>
+								  </a>
+								  <a className="list-group-item list-group-item-action" onClick={this.exportCards.bind(this)}>
+								 	<i className="fa fa-download"></i>&nbsp;<span className="align-suit-text">Export Deck</span>
+								  </a>
+								  <a className="list-group-item list-group-item-action" onClick={this.uploadCards.bind(this)}>
+								 	<i className="fa fa-upload"></i>&nbsp;<span className="align-suit-text">Upload Deck</span><input ref={this.cardsUpload} type="file" hidden/>
 								  </a>
 								</div>
 							</div>
@@ -227,22 +298,22 @@ class Manager extends React.Component {
 						            		<div className="col-md-6">
 								            	<div className="form-group">
 													<label htmlFor="cardname-input">Card name</label>
-													<input type="text" className="form-control" id="cardname-input" onChange={this.editCard.bind(this)} placeholder="Card name" ref={this.cardName}/>
+													<input type="text" className="form-control" id="cardname-input" onChange={this.editCard.bind(this, 'name')} placeholder="Card name" ref={this.cardName}/>
 												</div>
 												<div className="form-group">
-													<label htmlFor="action1-input">Action1</label>
-													<input type="text" className="form-control" id="action1-input" onChange={this.editCard.bind(this)} placeholder="Action name" ref={this.action1}/>
+													<label htmlFor="action1-input">Action</label>
+													<input type="text" className="form-control" id="action1-input" onChange={this.editCard.bind(this, 'action1')} placeholder="Action name" ref={this.action1}/>
 												</div>
 											</div>
 
 											<div className="col-md-6">
 								            	<div className="form-group">
 													<label htmlFor="image-url-input">Image URL</label>
-													<input type="text" className="form-control" id="image-url-input" onChange={this.editCard.bind(this)} placeholder="URL" ref={this.imageUrl}/>
+													<input type="text" className="form-control" id="image-url-input" onChange={this.editCard.bind(this, 'image_url')} placeholder="URL" ref={this.imageUrl}/>
 												</div>
 												<div className="form-group">
-													<label htmlFor="action2-input">Action2</label>
-													<input type="text" className="form-control" id="action2-input" onChange={this.editCard.bind(this)} placeholder="Action name" ref={this.action2}/>
+													<label htmlFor="action2-input">Object</label>
+													<input type="text" className="form-control" id="action2-input" onChange={this.editCard.bind(this, 'action2')} placeholder="Action name" ref={this.action2}/>
 												</div>
 											</div>
 										</div>

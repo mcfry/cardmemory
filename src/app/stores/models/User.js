@@ -52,7 +52,7 @@ class User {
 		          'Content-Type': 'application/json'
 		        }
 		    }).then((response) => {
-				sessionStorage.pushItem('alerts', {
+				this.rootStore.AlertStore.pushItem('alerts', {
 					type: 'success',
 					message: "You've successfully registered, try logging in!"
 				});
@@ -100,7 +100,7 @@ class User {
 		        localStorage.removeItem('email');
 		        localStorage.removeItem('authentication_token');
 
-		        sessionStorage.pushItem('alerts', {
+		        this.rootStore.AlertStore.pushItem('alerts', {
 		          type: 'success',
 		          message: "You've successfully logged out."
 		        });
@@ -147,7 +147,7 @@ class User {
 					localStorage.setItem('username', username);
 					localStorage.setItem('email', email);
 
-					sessionStorage.pushItem('alerts', {
+					this.rootStore.AlertStore.pushItem('alerts', {
 						type: 'success',
 						message: "You've successfully logged in!"
 					});

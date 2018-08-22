@@ -44,7 +44,7 @@ class Card extends React.Component {
 					  	<img className="top-suit" alt="card-suit" src={this.props.cardSuitImg}/>
 					  </div>
 					  <div className="card-body">
-					    <h4 className="card-title">{this.props.cardTitle}</h4>
+					    {this.props.cardTitle ? <h4 className="card-title">{this.props.cardTitle}</h4> : <h4>&nbsp;</h4>}
 					    <div className="card-div container">
 					    	<div className="row">
 					    		<div className="mx-auto">
@@ -54,9 +54,9 @@ class Card extends React.Component {
 					    </div>
 					    <div className="container">
 						    <p className="card-text">
-						    	<b>Name:</b> {this.props.cardName} <br/>
-						    	<b>Action1:</b> {this.props.action1} <br/>
-						    	<b>Action2:</b> {this.props.action2} <br/>
+						    	{this.props.cardName ? (<React.Fragment><b>Name:</b> {this.props.cardName} <br/></React.Fragment>) : <span>&nbsp;</span>}
+						    	{this.props.action1 ? (<React.Fragment><b>Action:</b> {this.props.action1} <br/></React.Fragment>) : <span>&nbsp;</span>}
+						    	{this.props.action2 ? (<React.Fragment><b>Object:</b> {this.props.action2} <br/></React.Fragment>) : <span>&nbsp;</span>}
 						    </p>
 						</div>
 					  </div>

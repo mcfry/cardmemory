@@ -42,14 +42,18 @@ Storage.prototype.getArray = function(key) {
 };
 
 // Retrieve pseudo array object
-Storage.prototype.getArrayAndClear = function(key) {
+Storage.prototype.getArrayAndClear = function(key, delay=0) {
   // Parse stringified array if exists
   let existing = this.getItem(key);
   if (existing !== null) {
     existing = JSON.parse(existing);
   }
 
-  this.removeItem(key);
+  // delay in case of page refresh we want persistence
+  setTimeout(() => {
+    this.removeItem(key);
+  }, delay);
+  
   return existing;
 };
 

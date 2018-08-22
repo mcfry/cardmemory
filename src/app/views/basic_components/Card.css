@@ -3,6 +3,10 @@
 	border-radius: 8px;
 }
 
+.card-text {
+	font-size: 11px;
+}
+
 .card.no-border {
 	border-radius: 0px;
 }

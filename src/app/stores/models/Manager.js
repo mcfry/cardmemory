@@ -1,6 +1,8 @@
 // Libraries
+import { saveAs } from 'file-saver/FileSaver';
 import { observable, action } from 'mobx';
 import axios from 'axios';
+import LZString from 'lz-string';
 
 class Manager {
 
@@ -15,6 +17,7 @@ class Manager {
 	@observable currentSubNav = "Create";
 	@observable isLoading = false;
 	@observable deckObject = null; // cards: {name, image_url, action1, action2}, deck_info: {}
+	@observable bestTimes = [];
 
 	@action setCurrentSubNav(subNav) {
 		this.currentSubNav = subNav;
@@ -31,7 +34,20 @@ class Manager {
 		} else {
 			this.currentSubNav = "Edit";
 		}
-		console.log(deckObject);
+	}
+
+	@action setCards(cards) {
+		if (cards !== null) {
+			for (var suit = 1; suit <= 4; suit++) {
+				for (var denom = 2; denom <= 14; denom++) {
+					this.deckObject.cards[suit][denom] = cards[suit][denom];
+				}
+			}
+		}
+	}
+
+	@action setBestTimes(times) {
+		this.bestTimes = times;
 	}
 	
 	/////////////////////
@@ -52,14 +68,14 @@ class Manager {
 	          'X-User-Token': localStorage.getItem('authentication_token')
 	        }
 	    }).then((response) => {
-			sessionStorage.pushItem('alerts', {
+			this.rootStore.AlertStore.pushItem('alerts', {
 				type: 'success',
 				message: "Deck successfully created!"
 			});
 
 	    	this.loadDeck();
 		}).catch((error) => {
-			sessionStorage.pushItem('alerts', {
+			this.rootStore.AlertStore.pushItem('alerts', {
 				type: 'danger',
 				message: "Something went wrong. Please try again."
 			});
@@ -69,6 +85,7 @@ class Manager {
 	}
 
 	updateCards() {
+		//console.log(JSON.stringify(this.deckObject.cards));
 		this.setIsLoading(true);
 		axios({
 			url: `http://0.0.0.0:3001/api/v1/deck_infos`, 
@@ -80,19 +97,87 @@ class Manager {
 	          'X-User-Token': localStorage.getItem('authentication_token')
 	        }
 	    }).then((response) => {
-			sessionStorage.pushItem('alerts', {
+			this.rootStore.AlertStore.pushItem('alerts', {
 				type: 'success',
 				message: "Deck successfully updated!"
 			});
 
 			this.setIsLoading(false);
 		}).catch((error) => {
-			sessionStorage.pushItem('alerts', {
+			this.rootStore.AlertStore.pushItem('alerts', {
 				type: 'danger',
 				message: "Something went wrong. Please try again."
 			});
 
 			this.setIsLoading(false);
+		});
+	}
+
+	exportCards() {
+		try {
+			if (window.File && window.FileReader && window.FileList && window.Blob) {
+				let jsonString = JSON.stringify(this.deckObject.cards);
+				let lzString = LZString.compressToUTF16(jsonString);
+				let deckBlob = new Blob([lzString], {type: "text/plain;charset=utf-16"});
+				saveAs(deckBlob, 'memo-deck.txt');
+			} else {
+				this.rootStore.AlertStore.pushItem('alerts', {
+					type: 'warning',
+					message: "Your current browser version does not support uploading the deck you just downloaded."
+				});
+			}
+		} catch(e) {
+			this.rootStore.AlertStore.pushItem('alerts', {
+				type: 'danger',
+				message: "Exporting decks is not supported by your current browser version."
+			});
+		}
+	}
+
+	uploadCards(cards) {
+		this.setCards(cards);
+		this.updateCards();
+	}
+
+	sendTime(timeObj) {
+		axios({
+			url: `http://0.0.0.0:3001/api/v1/best_times`, 
+	        method: 'post',
+	        data: timeObj,
+	        headers: {
+	          'Content-Type': 'application/json',
+	          'X-User-Email': localStorage.getItem('email'),
+	          'X-User-Token': localStorage.getItem('authentication_token')
+	        }
+	    }).then((response) => {
+	    	// Success
+	    	this.getTimes();
+		}).catch((error) => {
+			this.rootStore.AlertStore.pushItem('alerts', {
+				type: 'danger',
+				message: "Couldn't retrieve your best times, something went wrong. Please try again."
+			});
+		});
+	}
+
+	// TODO: cache the result
+	getTimes() {
+		axios({
+			url: `http://0.0.0.0:3001/api/v1/best_times`, 
+	        method: 'get',
+	        headers: {
+	          'Content-Type': 'application/json',
+	          'X-User-Email': localStorage.getItem('email'),
+	          'X-User-Token': localStorage.getItem('authentication_token')
+	        }
+	    }).then((response) => {
+	    	// Success
+	    	this.setBestTimes(response.data);
+		}).catch((error) => {
+			this.rootStore.AlertStore.pushItem('alerts', {
+				type: 'danger',
+				message: "Couldn't retrieve your best times, something went wrong. Please try again."
+			});
 		});
 	}
 
@@ -109,10 +194,11 @@ class Manager {
 		          'X-User-Token': localStorage.getItem('authentication_token')
 		        }
 		    }).then((response) => {
-		    	console.log(response.data);
-		    	let test = observable.map(response.data.cards);
+		    	//console.log(response.data);
+		    	//let test = observable.map(response.data.cards);
+		    	//console.log(test);
+
 		    	let tempDeckObj = observable.object(response.data);
-		    	console.log(test);
 		    	this.setDeckObject(tempDeckObj);
 		    	this.setIsLoading(false);
 			}).catch((error) => {

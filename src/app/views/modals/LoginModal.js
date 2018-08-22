@@ -76,7 +76,7 @@ class LoginModal extends React.Component {
 
 	render() {
 		const isAlert = this.state.lastLoginFailed ? 
-			<Alert alertType="danger" alertMessage="Oh snap! Information is incorrect." ref={this.alert} /> : '';
+			<Alert alertType="danger" alertMessage="Oh snap! Information is incorrect." basicAlert={true} ref={this.alert} /> : '';
 
 		return (
 		  	<div id="login-modal" className="modal">

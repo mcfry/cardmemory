@@ -7,6 +7,7 @@ import { withRouter } from 'react-router-dom';
 import CreateManager from './CreateManager.js';
 import EditManager from './EditManager.js';
 import PracticeManager from './PracticeManager.js';
+import Scoreboard from './Scoreboard.js';
 import Loading from '../../basic_components/Loading.js';
 
 // Css
@@ -35,10 +36,7 @@ class Manager extends React.Component {
 			<div className="manager">
 				<ul className="nav nav-tabs">
 					<div className="container">
-			        	{this.props.User.isLoading || this.props.Manager.isLoading ? (
-			        		''
-			        	) : (
-			        		<React.Fragment>
+			        		<div className={this.props.User.isLoading || this.props.Manager.isLoading ? 'd-none' : ''}>
 			        			{!this.props.User.isLoggedIn ? (
 									<li className="nav-item pull-left">
 						              <a className={"nav-link active show"} 
@@ -61,12 +59,16 @@ class Manager extends React.Component {
 									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Practice' ? " active show" : "")} 
 									              	 onClick={this.subNavClick.bind(this, 'Practice')} data-toggle="tab">Practice</a>
 									            </li>
+									            <li className="nav-item pull-left">
+									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Scoreboard' ? " active show" : "")} 
+									              	 onClick={this.subNavClick.bind(this, 'Scoreboard')} data-toggle="tab">Scoreboard</a>
+									            </li>
+
 									        </React.Fragment>
 								        )}
 							     	</React.Fragment>
 							    )}
-				        	</React.Fragment>
-				        )}
+				        	</div>
 			        </div>
 		        </ul>
 
@@ -94,6 +96,7 @@ class Manager extends React.Component {
 							            		<React.Fragment>
 													<EditManager isActive={this.props.Manager.currentSubNav === 'Edit'} />
 													<PracticeManager isActive={this.props.Manager.currentSubNav === 'Practice'} />
+													<Scoreboard isActive={this.props.Manager.currentSubNav === 'Scoreboard'} />
 												</React.Fragment>
 											}
 								        </React.Fragment>
