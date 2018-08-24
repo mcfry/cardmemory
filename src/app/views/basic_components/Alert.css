@@ -11,7 +11,6 @@
 .alert {
 	border-radius: 0px;
 	transition: visibility 0.4s, opacity 0.4s;
-	opacity: 1 !important;
 }
 
 .alert-bottom {

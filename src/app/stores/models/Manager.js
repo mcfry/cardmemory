@@ -114,6 +114,10 @@ class Manager {
 	}
 
 	exportCards() {
+		// NOTE: It would be nice to download as a json file so it could be modified locally, however
+		// saveAs() uses the HTML5 api to download files client-side and does not support large files.
+		// Since we want to export/use a large number of images in the deck, this is probably not feasible
+		// this way.
 		try {
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
 				let jsonString = JSON.stringify(this.deckObject.cards);

@@ -272,7 +272,7 @@ class Manager extends React.Component {
 								 	<i className="fa fa-save"></i>&nbsp;<span className="align-suit-text">Save Deck</span>
 								  </a>
 								  <a className="list-group-item list-group-item-action" onClick={this.exportCards.bind(this)}>
-								 	<i className="fa fa-download"></i>&nbsp;<span className="align-suit-text">Export Deck</span>
+								 	<i className="fa fa-download"></i>&nbsp;<span className="align-suit-text">Download Deck</span>
 								  </a>
 								  <a className="list-group-item list-group-item-action" onClick={this.uploadCards.bind(this)}>
 								 	<i className="fa fa-upload"></i>&nbsp;<span className="align-suit-text">Upload Deck</span><input ref={this.cardsUpload} type="file" hidden/>

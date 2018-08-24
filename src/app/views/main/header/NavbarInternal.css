@@ -7,3 +7,8 @@
 .nav-link {
 	outline: none;
 }
+
+.login-nav {
+	/* prevents large alerts list from overlapping buttons */
+	z-index: 100;
+}

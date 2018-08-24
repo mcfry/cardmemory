@@ -43,7 +43,7 @@ class NavbarInternal extends React.Component {
   render () {
     //this.props.User.isLoading
     const loginNav = this.props.User.isLoggedIn ? (
-      <ul className="navbar-nav">
+      <ul className="navbar-nav login-nav">
         <li className="nav-item">
           <a className="nav-link active">{localStorage.getItem('username')}</a>
         </li>
@@ -54,7 +54,7 @@ class NavbarInternal extends React.Component {
       </ul>
     ) : (!this.props.User.isInitialLoading ? (
       <React.Fragment>
-        <ul className="navbar-nav">
+        <ul className="navbar-nav login-nav">
           <li className="nav-item">
             <a className="nav-link" data-toggle="modal" data-target="#login-modal">Login</a>
           </li>

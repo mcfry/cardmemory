@@ -12,6 +12,9 @@ class Alert extends React.Component {
 		// Func binds
 		this.closeAlert = this.closeAlert.bind(this);
 
+		// Refs
+		this.tempAlert = React.createRef();
+
 		this.initialState = {
 			alertOpen: true, alertCanTransition: true, alertCanAnimate: this.props.basicAlert === true ? false : true, alertAnimState: 'bounceInRight'
 		};
@@ -52,15 +55,24 @@ class Alert extends React.Component {
 		}
 	}
 
-	componentDidUpdate() {
-		console.log(this.props.alertMessage);
+	componentDidMount() {
+		setTimeout(() => {
+			this.setState({alertAnimState: 'fadeOutUp'});
+
+			// After ~1 second duration, remove the last list element in parent
+			setTimeout(() => {
+				this.setState({alertOpen: false});
+			}, 600);
+		}, 5000);
 	}
 
 	render () {
-		const alertClasses = classNames('alert', 
+		const alertClasses = classNames(
+			'alert', 
+			{'alert-bottom animated alert-animate': this.state.alertCanAnimate}, 
+			this.state.alertAnimState, 
+			'alert-'+this.aliasError(this.props.alertType), 
 			{
-				'alert-bottom animated alert-animate': this.state.alertCanAnimate
-			}, this.state.alertAnimState, 'alert-'+this.aliasError(this.props.alertType), {
 				hide: !this.state.alertCanTransition,
 				none: !this.state.alertOpen
 			}
@@ -68,7 +80,7 @@ class Alert extends React.Component {
 
 		return (
 			<React.Fragment>
-				<div className={alertClasses}>
+				<div className={alertClasses} ref={this.tempAlert}>
 				  <button type="button" className="close" onClick={this.closeAlert}>&times;</button>
 				  {this.props.alertMessage}
 				</div>

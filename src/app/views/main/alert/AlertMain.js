@@ -1,6 +1,6 @@
 // Libraries
 import React from "react";
-import { observable } from "mobx";
+// import { observable } from "mobx";
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 
@@ -11,10 +11,6 @@ import Alert from '../../basic_components/Alert';
 
 // Css
 
-// Non-render state
-let alerts = {};
-let alerts_queue = [];
-
 @withRouter @inject((RootStore) => {
 	return {
 		Alert: RootStore.AlertStore
@@ -22,11 +18,13 @@ let alerts_queue = [];
 }) @observer
 class AlertMain extends React.Component {
 
-	@observable index = 0;
-
 	constructor(props) {
 		super(props);
-		alerts = {};
+
+		// Non-render state
+		this.activeAlerts = {};
+		this.alertsQueue = [];
+		this.alertsTotal = 0;
 
 		// Func Binds
 
@@ -34,46 +32,38 @@ class AlertMain extends React.Component {
 	}
 
 	componentWillUpdate() {
-		let new_alerts = [];
-		let explulsed_alert_keys = {};
-
-		let sessionAlerts = sessionStorage.getArrayAndClear("alerts", 800) || [];
-		for (const alert of sessionAlerts) {
-			if (alert.message in alerts) {
-				alerts[alert.message].childRef.current.resetAlert();
-
-				explulsed_alert_keys[alert.message] = true;
-				new_alerts.push(alerts[alert.message]);
+		let oldAlerts = [];
+		for (let alert of this.alertsQueue) {
+			if (alert.childRef.current && alert.childRef.current.state.alertOpen === false) {
+				delete this.activeAlerts[alert.message];
 			} else {
-				alerts[alert.message] = alert;
-				alerts[alert.message].index = Object.keys(alerts).length;
-				alerts[alert.message].childRef = React.createRef();
-
-				new_alerts.push(alerts[alert.message]);
+				oldAlerts.push(alert);
 			}
 		}
 
-		let old_queue = [];
-		if (Object.keys(explulsed_alert_keys).length > 0) {
-			for (let qd_alert of alerts_queue) {
-				if (!(qd_alert.message in explulsed_alert_keys)) {
-					old_queue.push(qd_alert);
-				}
-			}	
-		} else {
-			old_queue = alerts_queue;
+		let sessionAlerts = sessionStorage.getArrayAndClear("alerts", 0) || [];
+		let nq = [];
+		for (let alert of sessionAlerts) {
+			if (alert.type !== undefined && alert.message !== undefined && !(alert.message in this.activeAlerts)) {
+				alert.index = this.alertsTotal++;
+				alert.childRef = React.createRef();
+				nq.push(alert);
+				this.activeAlerts[alert.message] = true;
+			}
 		}
 
-		alerts_queue = new_alerts.concat(old_queue);
+		this.alertsQueue = nq.concat(oldAlerts);
 	}
 
 	render() {
+		// NOTE: Sometimes rendered twice if uri changes
+
 		// Pre-render logic
 		const alertsToRender = [];
-	    if (Object.keys(alerts).length !== 0) {
-	    	for (let aq of alerts_queue) {
+	    if (this.alertsQueue.length !== 0) {
+	    	for (let aq of this.alertsQueue) {
 	    		alertsToRender.push(
-	    			<Alert key={aq.index} alertType={aq.type} alertMessage={aq.message} ref={alerts[aq.message].childRef} />
+	    			<Alert key={aq.index} alertType={aq.type} alertMessage={aq.message} removeLast={this.removeLast} ref={aq.childRef}/>
 	    		);
 	    	}
 	    }
