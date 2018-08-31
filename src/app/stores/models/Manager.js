@@ -85,7 +85,6 @@ class Manager {
 	}
 
 	updateCards() {
-		//console.log(JSON.stringify(this.deckObject.cards));
 		this.setIsLoading(true);
 		axios({
 			url: `http://0.0.0.0:3001/api/v1/deck_infos`, 

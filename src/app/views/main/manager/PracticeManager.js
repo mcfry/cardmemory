@@ -62,9 +62,14 @@ class Manager extends React.Component {
 		this.memTimer = React.createRef();
 		this.recallTimer = React.createRef();
 		this.cardName = React.createRef();
+		this.goButton = React.createRef();
+		this.nextRoundButton = React.createRef();
+		this.startRecallButton = React.createRef();
+		this.nextCardButton = React.createRef();
 
 		// funcs
-		this.getCardSuitImage.bind(this);
+		this.getCardSuitImage = this.getCardSuitImage.bind(this);
+		this.handleKeyDown = this.handleKeyDown.bind(this);
 
 		// enum (14-2)
 		const denoms = ['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
@@ -173,6 +178,8 @@ class Manager extends React.Component {
 							this.nextButtonDisabled = true;
 							this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
 							setTimeout(() => {
+								this.cardName.current.value = "";
+								this.cardName.current.focus();
 								this.nextButtonDisabled = false;
 							}, 1000);
 						} else {
@@ -370,7 +377,7 @@ class Manager extends React.Component {
 				type: 'error',
 				message: "You must first select the number of cards and method to practice!"
 			});
-		} else if (cardMode === 'Flash Cards' && this.cardsFinished.length <= 2) {
+		} else if (cardMode === 'Flash Cards' && this.cardsFinished.length < 2) {
 			this.props.Alert.pushItem('alerts', {
 				type: 'error',
 				message: "You must completely finish (every field) at least 2 cards before using this mode!"
@@ -472,6 +479,28 @@ class Manager extends React.Component {
 		}
 	}
 
+	handleKeyDown(e) {
+		if (e.key === 'Enter') {
+			if (this.inProgressState === 0) {
+				if (this.goButton.current) {
+					this.goButton.current.click();
+				}
+			} else if (this.inProgressState === 1 || this.inProgressState === 3) {
+				if (this.nextCardButton.current) {
+					this.nextCardButton.current.click();
+				}
+			} else if (this.inProgressState === 2) {
+				if (this.startRecallButton.current) {
+					this.startRecallButton.current.click();
+				}
+			} else if (this.inProgressState === 4) {
+				if (this.nextRoundButton.current) {
+					this.nextRoundButton.current.click();
+				}
+			}
+		}
+	}
+
 	curr(ref) {
 		if (ref.current) {
 			return parseInt(ref.current.value, 10);
@@ -482,6 +511,12 @@ class Manager extends React.Component {
 
 	componentDidMount() {
 		this.getCardsFinished();
+
+		document.addEventListener("keydown", this.handleKeyDown);
+	}
+
+	componentWillUnmount() {
+		document.removeEventListener("keydown", this.handleKeyDown);	
 	}
 
 	render() {
@@ -563,7 +598,7 @@ class Manager extends React.Component {
 							<div className={configDisplay}>
 								<br/><br/>
 								<div className="form-group">
-								    <select className="custom-select" defaultValue="0" onChange={this.updateMode.bind(this)} ref={this.selectMode}>
+								    <select className="custom-select" defaultValue="0" onChange={this.updateMode.bind(this)} ref={this.selectMode} autoFocus>
 								      <option value="0" disabled>Review Mode</option>
 								      {['Flash Cards', 'Memorize the Deck'].map((mode, index) => {
 								      	return (<option key={index} value={mode}>
@@ -599,7 +634,7 @@ class Manager extends React.Component {
 									</React.Fragment>
 								) : ''}
 
-								<button type="button" onClick={this.startPractice.bind(this)} className="btn btn-primary btn-danger practice-button-start">Go!</button>
+								<button type="button" onClick={this.startPractice.bind(this)} ref={this.goButton} className="btn btn-primary btn-danger practice-button-start">Go!</button>
 							</div>
 
 							{this.inProgressState === 4 ? (
@@ -609,7 +644,7 @@ class Manager extends React.Component {
 											<h1 style={{'fontColor': 'green'}}>Success</h1>
 										</div>
 
-										<button type="button" onClick={this.resetPractice.bind(this)} className="btn btn-danger recall">
+										<button type="button" onClick={this.resetPractice.bind(this)} ref={this.nextRoundButton} className="btn btn-danger recall">
 											Next Round
 										</button>
 									</div>
@@ -623,7 +658,7 @@ class Manager extends React.Component {
 												<Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom}
 													  cardSuitImg={this.getCardSuitImage()} cardImgAlt=""
 													  cardTitle={this.currentMode === 'Flash Cards' ? null : this.currentCard.name}
-													  cardImg={this.currentCard.image_url}
+													  cardImg={this.currentMode === 'Flash Cards' ? null : this.currentCard.image_url}
 													  cardName={this.currentMode === 'Flash Cards' ? null : this.currentCard.name}
 													  action1={this.currentMode === 'Flash Cards' ? null : this.currentCard.action1}
 													  action2={this.currentMode === 'Flash Cards' ? null : this.currentCard.action2} />
@@ -631,7 +666,7 @@ class Manager extends React.Component {
 
 											{this.inProgressState === 2 ? (
 												<div className="container text-center">
-													<button type="button" onClick={this.startRecall.bind(this)} className="btn btn-danger recall">
+													<button type="button" onClick={this.startRecall.bind(this)} ref={this.startRecallButton} className="btn btn-danger recall">
 														Start Recall
 													</button>
 												</div>
@@ -687,21 +722,21 @@ class Manager extends React.Component {
 											{this.inProgressState === 1 || this.inProgressState === 3 ? (
 												<div className={this.currentMode === 'Flash Cards' ? "next-flash-card-go" : "next-card-go"}>
 													<span><b>{this.currentStep > this.activeCardNumber ? this.activeCardNumber : this.currentStep}</b> of <b>{this.activeCardNumber}</b></span><br/>
-													{this.currentMode === 'Flash Cards' ? (
-														<React.Fragment>
-															<button type="button" onClick={this.skipCard.bind(this)} className="btn btn-danger">
-																Skip Card
-															</button>
-															&nbsp;&nbsp;&nbsp;
-														</React.Fragment>
-													) : ''}
-													<button type="button" onClick={this.nextCard.bind(this)} className="btn btn-danger">
+													<button type="button" onClick={this.nextCard.bind(this)} ref={this.nextCardButton} className="btn btn-danger">
 														{this.currentStep < this.activeCardNumber ? (
 															'Next Card'
 														) : ( 
-															this.inProgressState === 1 ? 'Finish Memorizing' : 'Finish Recall'
+															'Finish'
 														)}
 													</button>
+													{this.currentMode === 'Flash Cards' ? (
+														<React.Fragment>
+															&nbsp;&nbsp;&nbsp;
+															<button type="button" onClick={this.skipCard.bind(this)} className="btn btn-danger">
+																Skip Card
+															</button>
+														</React.Fragment>
+													) : ''}
 												</div>
 											) : <React.Fragment></React.Fragment>}
 

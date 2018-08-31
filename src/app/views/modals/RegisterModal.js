@@ -34,7 +34,7 @@ class RegisterModal extends React.Component {
 		this.resetModal = this.resetModal.bind(this);
 
 		this.state = {
-			lastRegisterFailed: false, userRegistered: false, usernameValid: false, usernameErrorStr: "", 
+			lastRegisterFailed: false, lastRegisterError: '', userRegistered: false, usernameValid: false, usernameErrorStr: "", 
 			emailValid: false, emailErrorStr: "", passwordsValid: false, passwordsErrorStr: "", confPasswordsErrorStr: ""
 		};
 	}
@@ -121,9 +121,13 @@ class RegisterModal extends React.Component {
 
 	attemptToRegisterUser() {
 		const { User } = this.props;
-		const failed = () => {
+		const failed = (message = null) => {
+			if (message === undefined || message === '' || message === null) {
+				message = 'Oh snap! Change a few things up and try submitting again.'
+			}
+
 			this.setState({
-				userRegistered: false, lastRegisterFailed: true
+				userRegistered: false, lastRegisterFailed: true, lastRegisterError: message
 			});
 			if (this.alert.current) {
 				this.alert.current.resetAlert();
@@ -139,7 +143,11 @@ class RegisterModal extends React.Component {
 				});
 			}).catch((error) => {
 				transaction(() => {
-					failed();
+					try {
+						failed(error.response.data.message);
+					} catch(e) {
+						failed();
+					}
 					error.transactions();
 				});
 			});
@@ -150,7 +158,7 @@ class RegisterModal extends React.Component {
 
 	render() {
 		const lastRegisterAlert = this.state.lastRegisterFailed ? 
-			<Alert alertType="danger" alertMessage="Oh snap! Change a few things up and try submitting again." ref={this.alert} /> : '';
+			<Alert alertType="danger" alertMessage={this.state.lastRegisterError} basicAlert={true} ref={this.alert} /> : '';
 
 		// Begin User Helpers
 		const emptyUsername = !this.username.current || (this.username.current && String.isEmpty(this.username.current.value));

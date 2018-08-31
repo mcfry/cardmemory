@@ -1,6 +1,7 @@
 // Libraries
 import React from 'react';
 import { observer} from 'mobx-react';
+import interact from 'interactjs';
 
 // Css
 import './Card.css';
@@ -8,6 +9,20 @@ import './Card.css';
 // Make it an observer so we can dereference observables in this component and trigger render
 @observer
 class Card extends React.Component {
+	constructor(props) {
+		super(props);
+
+		// Refs
+		this.cardImageRef = React.createRef();
+		this.objectImageRef = React.createRef();
+
+		// Funcs
+		this.objImageLoaded = this.objImageLoaded.bind(this);
+		this.cardImageLoaded = this.cardImageLoaded.bind(this);
+		this.objImageError = this.objImageError.bind(this);
+		this.cardImageError = this.cardImageError.bind(this);
+	}
+
 	normallizeDenom(denom) {
 		if (denom === 'Ace') {
 			return 'A';
@@ -34,6 +49,113 @@ class Card extends React.Component {
 		}
 	}
 
+	cardImageError() {
+	}
+
+	objImageError() {
+	}
+
+	cardImageLoaded() {
+		if (this.cardImageRef.current) {
+			// Not yet seen (default pos)
+			if (this.props.cardImgTx === null) {
+				this.cardImageRef.current.setAttribute('data-xp', 0);
+				this.cardImageRef.current.setAttribute('data-yp', 0);
+			} else {
+				this.cardImageRef.current.style.transform = 
+				this.cardImageRef.current.style.webkitTransform = 
+					`translate(${this.props.cardImgTx}px, ${this.props.cardImgTy}px)`;
+				this.cardImageRef.current.setAttribute('data-xp', this.props.cardImgTx);
+				this.cardImageRef.current.setAttribute('data-yp', this.props.cardImgTy);
+			}
+
+			if (this.props.cardImgH !== null) {
+				this.cardImageRef.current.style.height = `${this.props.cardImgH}px`;
+				this.cardImageRef.current.style.width = `${this.props.cardImgW}px`;
+			} else {
+				this.cardImageRef.current.style.height = '';
+				this.cardImageRef.current.style.width = '';
+			}
+		}
+	}
+
+	objImageLoaded() {
+		if (this.objectImageRef.current) {
+			if (this.cardImageRef.current) {
+				// Not yet seen (default pos)
+				if (this.props.objectImgTx === null) {
+					this.objectImageRef.current.style.transform = 
+					this.objectImageRef.current.style.webkitTransform = 
+						`translate(${20}px, -${this.cardImageRef.current.offsetHeight}px)`;
+					this.objectImageRef.current.setAttribute('data-xp', 20);
+					this.objectImageRef.current.setAttribute('data-yp', -(this.cardImageRef.current.offsetHeight));
+				} else {
+					this.objectImageRef.current.style.transform = 
+					this.objectImageRef.current.style.webkitTransform = 
+						`translate(${this.props.objectImgTx}px, ${this.props.objectImgTy}px)`;
+					this.objectImageRef.current.setAttribute('data-xp', this.props.objectImgTx);
+					this.objectImageRef.current.setAttribute('data-yp', this.props.objectImgTy);
+				}
+
+				if (this.props.objectImgH !== null) {
+					this.objectImageRef.current.style.height = `${this.props.objectImgH}px`;
+					this.objectImageRef.current.style.width = `${this.props.objectImgW}px`;
+				} else {
+					this.objectImageRef.current.style.height = '';
+					this.objectImageRef.current.style.width = '';
+				}
+			}
+		}
+	}
+
+	componentDidMount() {
+		interact('.card-image')
+		.draggable({
+			onmove: (event) => {
+			    var target = event.target,
+			        // keep the dragged position in the data-x/data-y attributes
+			        x = (parseFloat(target.getAttribute('data-xp')) || 0) + event.dx,
+			        y = (parseFloat(target.getAttribute('data-yp')) || 0) + event.dy;
+
+			    // translate the element
+			    target.style.webkitTransform =
+			    target.style.transform =
+			      'translate(' + x + 'px, ' + y + 'px)';
+
+			    // update the position attributes
+			    target.setAttribute('data-xp', x);
+			    target.setAttribute('data-yp', y);
+			},
+			restrict: {
+			  restriction: '.card-div',
+			  elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+			},
+		})
+		.resizable({
+			// resize from all edges and corners
+			edges: { left: true, right: true, bottom: true, top: true },
+
+			// keep the edges inside the parent
+			restrictEdges: {
+			  outer: '.card-div',
+			  endOnly: true,
+			},
+
+			// minimum size
+			restrictSize: {
+			  min: { width: 50, height: 50 },
+			},
+
+			inertia: true,
+		})
+		.on('resizemove', function (event) {
+			var target = event.target;
+			target.style.width  = event.rect.width + 'px';
+			target.style.height = event.rect.height + 'px';
+			target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height);
+		});
+	}
+
 	render() {
 		return (
 			<React.Fragment>
@@ -47,8 +169,9 @@ class Card extends React.Component {
 					    {this.props.cardTitle ? <h4 className="card-title">{this.props.cardTitle}</h4> : <h4>&nbsp;</h4>}
 					    <div className="card-div container">
 					    	<div className="row">
-					    		<div className="mx-auto">
-					    			<img className="card-image img-fluid" src={this.props.cardImg} alt={this.props.cardImgAlt} />
+					    		<div className="mx-auto card-images-cont">
+					    			<img className="card-image card-image-1 img-fluid" onLoad={this.cardImgLoaded} onError={this.cardImgError} src={this.props.cardImg} alt={this.props.cardImgAlt} ref={this.cardImageRef} />
+					    			<img className="card-image card-image-2 img-fluid" onLoad={this.objImageLoaded} onError={this.objImgError} src={this.props.action2} alt={this.props.cardImgAlt} ref={this.objectImageRef} />
 					    		</div>
 					    	</div>
 					    </div>
@@ -56,7 +179,6 @@ class Card extends React.Component {
 						    <p className="card-text">
 						    	{this.props.cardName ? (<React.Fragment><b>Name:</b> {this.props.cardName} <br/></React.Fragment>) : <span>&nbsp;</span>}
 						    	{this.props.action1 ? (<React.Fragment><b>Action:</b> {this.props.action1} <br/></React.Fragment>) : <span>&nbsp;</span>}
-						    	{this.props.action2 ? (<React.Fragment><b>Object:</b> {this.props.action2} <br/></React.Fragment>) : <span>&nbsp;</span>}
 						    </p>
 						</div>
 					  </div>

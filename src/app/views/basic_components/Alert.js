@@ -56,14 +56,16 @@ class Alert extends React.Component {
 	}
 
 	componentDidMount() {
-		setTimeout(() => {
-			this.setState({alertAnimState: 'fadeOutUp'});
-
-			// After ~1 second duration, remove the last list element in parent
+		// After ~1 second duration, remove the last list element in parent
+		if (this.state.alertCanAnimate === true) {
 			setTimeout(() => {
-				this.setState({alertOpen: false});
-			}, 600);
-		}, 5000);
+				this.setState({alertAnimState: 'fadeOutUp'});
+
+				setTimeout(() => {
+					this.setState({alertOpen: false});
+				}, 600);
+			}, 5000);
+		}
 	}
 
 	render () {

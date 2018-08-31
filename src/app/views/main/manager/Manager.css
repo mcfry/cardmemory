@@ -106,3 +106,10 @@ a:not([href]):not([tabindex]) {
 .scoreboard-col {
 	padding: 0px 30px 0px 30px;
 }
+
+.field-close-btn {
+	font-size: 25px;
+	margin-top: 16px;
+	margin-left: -12px;
+	cursor: pointer;
+}

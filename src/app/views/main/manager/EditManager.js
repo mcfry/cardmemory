@@ -30,9 +30,11 @@ import 'animate.css/animate.min.css';
 	}
 }) @observer
 class Manager extends React.Component {
+
 	@observable currentSuit = 'hearts';
 	@observable currentDenom = 'Ace';
 	@observable cardAnimState = 'bounceInRight';
+
 	constructor(props) {
 		super(props);
 
@@ -42,6 +44,7 @@ class Manager extends React.Component {
 
 		// refs
 		this.cardForm = React.createRef();
+		this.cardElem = React.createRef();
 		this.cardName = React.createRef();
 		this.imageUrl = React.createRef();
 		this.action1 = React.createRef();
@@ -49,7 +52,11 @@ class Manager extends React.Component {
 		this.cardsUpload = React.createRef();
 
 		// funcs
-		this.getCardSuitImage.bind(this);
+		this.getCardSuitImage = this.getCardSuitImage.bind(this);
+		this.clearImageData = this.clearImageData.bind(this);
+		this.updateCurrentImageData = this.updateCurrentImageData.bind(this);
+		this.suitTheme = this.suitTheme.bind(this);
+		this.colorTheme = this.colorTheme.bind(this);
 
 		// enum (14-2)
 		const denoms = ['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
@@ -69,11 +76,89 @@ class Manager extends React.Component {
 	}
 
 	suitChange(suit) {
-		this.setCurrentCard(suit, this.currentDenom);
+		if (this.currentSuit !== suit) {
+			this.updateCurrentImageData();
+			this.setCurrentCard(suit, this.currentDenom);
+		}
 	}
 
 	denomChange(denom) {
-		this.setCurrentCard(this.currentSuit, denom);
+		if (this.currentDenom !== denom) {
+			this.updateCurrentImageData();
+			this.setCurrentCard(this.currentSuit, denom);
+		}
+	}
+
+	suitTheme() {
+		return this.props.Manager.deckObject.deck_info[this.currentSuit];
+	}
+
+	colorTheme() {
+		if (this.currentSuit === 'diamonds' || this.currentSuit === 'hearts') {
+			return this.props.Manager.deckObject.deck_info['red'];
+		} else {
+			return this.props.Manager.deckObject.deck_info['black'];
+		}
+	}
+
+	clearField(fieldRef, fieldName) {
+		if (fieldRef.current) {
+			fieldRef.current.value = "";
+			if (fieldName === 'cardImage') {
+				this.clearImageData(true, false);
+				this.updateCurrentImageData();
+			} else if (fieldName === 'objectImage') {
+				this.clearImageData(false, true);
+				this.updateCurrentImageData();
+			}
+		}
+	}
+
+	clearImageData(clearCard = true, clearObj = true) {
+		if (this.cardElem.current) {
+			if (clearCard === true) {
+				this.cardElem.current.cardImageRef.current.src = "";
+				this.cardElem.current.cardImageRef.current.removeAttribute('style');
+				this.cardElem.current.cardImageRef.current.removeAttribute('data-xp');
+				this.cardElem.current.cardImageRef.current.removeAttribute('data-yp');
+				this.cardElem.current.cardImageRef.current.innerHTML = "";
+			}
+
+			if (clearObj === true) {
+				this.cardElem.current.objectImageRef.current.src = "";
+				this.cardElem.current.objectImageRef.current.removeAttribute('style');
+				this.cardElem.current.objectImageRef.current.removeAttribute('data-xp');
+				this.cardElem.current.objectImageRef.current.removeAttribute('data-yp');
+				this.cardElem.current.objectImageRef.current.innerHTML = "";
+			}
+		}
+	}
+
+	updateCurrentImageData() {
+		const suitNumeric = this.suitsEnum[this.currentSuit];
+		const denomNumeric = this.denomsEnum[this.currentDenom];
+
+		let image_tx = this.cardElem.current.cardImageRef.current.getAttribute('data-xp') || null;
+		let image_ty = this.cardElem.current.cardImageRef.current.getAttribute('data-yp') || null;
+		let image_h = this.cardElem.current.cardImageRef.current.style.height || null;
+		let image_w = this.cardElem.current.cardImageRef.current.style.width || null;
+		let image_url = this.cardElem.current.cardImageRef.current.getAttribute('src') || null;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_url = image_url;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_tx = image_tx;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_ty = image_ty;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_h = image_h === null ? null : image_h.slice(0,-2);
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_w = image_w === null ? null : image_w.slice(0,-2);
+
+		let action2_tx = this.cardElem.current.objectImageRef.current.getAttribute('data-xp') || null;
+		let action2_ty = this.cardElem.current.objectImageRef.current.getAttribute('data-yp') || null;
+		let action2_h = this.cardElem.current.objectImageRef.current.style.height || null;
+		let action2_w = this.cardElem.current.objectImageRef.current.style.width || null;
+		let action2 = this.cardElem.current.objectImageRef.current.getAttribute('src') || null;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2 = action2;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_tx = action2_tx;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_ty = action2_ty;
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_h = action2_h === null ? null : action2_h.slice(0,-2);
+		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_w = action2_w === null ? null : action2_w.slice(0,-2);
 	}
 
 	setCurrentCard(suit, denom, first=false) {
@@ -102,6 +187,9 @@ class Manager extends React.Component {
 			} else {
 				this.cardForm.current.reset();
 			}
+
+			if (first === false)
+				this.clearImageData();
 
 			this.currentSuit = suit;
 			this.currentDenom = denom;
@@ -155,12 +243,8 @@ class Manager extends React.Component {
 			} else {
 				updateCurrentCard.call(this, fieldType, event.target.value.substring(0, 25));
 			}
-		} else if (fieldType === 'action2') {
-			if (event.target.value.length < 25) {
-				updateCurrentCard.call(this, fieldType, event.target.value);
-			} else {
-				updateCurrentCard.call(this, fieldType, event.target.value.substring(0, 25));
-			}
+		} else if (fieldType === 'action2') { // Object Image
+			updateCurrentCard.call(this, fieldType, event.target.value);
 		} else if (fieldType === 'image_url') {
 			updateCurrentCard.call(this, fieldType, event.target.value);
 		} else {
@@ -173,6 +257,7 @@ class Manager extends React.Component {
 	}
 
 	updateCards() {
+		this.updateCurrentImageData();
 		this.props.Manager.updateCards();
 	}
 
@@ -222,6 +307,7 @@ class Manager extends React.Component {
 		const suitNumeric = this.suitsEnum[this.currentSuit];
 		const denomNumeric = this.denomsEnum[this.currentDenom];
 		const denoms = ['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+		const cardObj = this.props.Manager.deckObject.cards[suitNumeric][denomNumeric];
 
 		// Use the full object dereference in jsx, mobx tracks by access, not value..
 		// this.props.Manager.deckObject.cards[suitNumeric][denomNumeric]
@@ -297,7 +383,7 @@ class Manager extends React.Component {
 						            	<div className="row">
 						            		<div className="col-md-6">
 								            	<div className="form-group">
-													<label htmlFor="cardname-input">Card name</label>
+													<label htmlFor="cardname-input">Card Name (Theme: {`${this.suitTheme()} ${this.colorTheme()}`})</label>
 													<input type="text" className="form-control" id="cardname-input" onChange={this.editCard.bind(this, 'name')} placeholder="Card name" ref={this.cardName}/>
 												</div>
 												<div className="form-group">
@@ -308,12 +394,30 @@ class Manager extends React.Component {
 
 											<div className="col-md-6">
 								            	<div className="form-group">
-													<label htmlFor="image-url-input">Image URL</label>
-													<input type="text" className="form-control" id="image-url-input" onChange={this.editCard.bind(this, 'image_url')} placeholder="URL" ref={this.imageUrl}/>
+													<label htmlFor="image-url-input">Card Image URL</label>
+													<div className="row">
+														<div className="col-md-11">
+															<input type="text" className="form-control" id="image-url-input" onChange={this.editCard.bind(this, 'image_url')} placeholder="URL" ref={this.imageUrl}/>
+														</div>
+														<div className="col-md-1">
+															{cardObj.image_url !== null && cardObj.image_url.length > 0 ? 
+																<i className="fa fa-times field-close-btn" onClick={this.clearField.bind(this, this.imageUrl, 'cardImage')}></i>
+															: ''}
+														</div>
+													</div>
 												</div>
 												<div className="form-group">
-													<label htmlFor="action2-input">Object</label>
-													<input type="text" className="form-control" id="action2-input" onChange={this.editCard.bind(this, 'action2')} placeholder="Action name" ref={this.action2}/>
+													<label htmlFor="action2-input">Object Image URL</label>
+													<div className="row">
+														<div className="col-md-11">
+															<input type="text" className="form-control" id="action2-input" onChange={this.editCard.bind(this, 'action2')} placeholder="Action name" ref={this.action2}/>
+														</div>
+														<div className="col-md-1">
+															{cardObj.action2 !== null && cardObj.action2.length > 0 ?
+																<i className="fa fa-times field-close-btn" onClick={this.clearField.bind(this, this.action2, 'objectImage')}></i>
+															: ''}
+														</div>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -322,13 +426,22 @@ class Manager extends React.Component {
 									<br/>
 
 									<div className="container">
-										<Card klasses={deckTypeClasses} cardDenom={this.currentDenom}
-										  cardSuitImg={this.getCardSuitImage()} cardImgAlt=""
-										  cardTitle={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].name}
-										  cardImg={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_url}
-										  cardName={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].name}
-										  action1={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action1}
-										  action2={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2} />
+										<Card klasses={deckTypeClasses} ref={this.cardElem}
+											cardDenom={this.currentDenom}
+											cardSuitImg={this.getCardSuitImage()}
+											cardImgAlt=""
+											cardTitle={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].name}
+											cardImg={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_url}
+											cardImgTx={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_tx}
+											cardImgTy={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_ty}
+											cardImgH={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_h}
+											cardImgW={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_w}
+											action1={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action1}
+											action2={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2}
+											objectImgTx={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_tx}
+											objectImgTy={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_ty}
+											objectImgH={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_h}
+											objectImgW={this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_w} />
 									</div>
 
 					            </div>

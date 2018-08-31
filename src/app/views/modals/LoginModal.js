@@ -28,7 +28,7 @@ class LoginModal extends React.Component {
 		this.attemptLogin = this.attemptLogin.bind(this);
 
 		this.state = {
-			lastLoginFailed: false
+			lastLoginFailed: false, lastLoginError: ''
 		};
 	}
 
@@ -47,9 +47,13 @@ class LoginModal extends React.Component {
 
 	attemptLogin() {
 		const { User } = this.props;
-		const failed = () => {
+		const failed = (message = null) => {
+			if (message === undefined || message === '' || message === null) {
+				message = 'Oh snap! Change a few things up and try submitting again.'
+			}
+
 			this.setState({
-				lastLoginFailed: true
+				lastLoginFailed: true, lastLoginError: message
 			});
 			if (this.alert.current) {
 				this.alert.current.resetAlert();
@@ -66,7 +70,11 @@ class LoginModal extends React.Component {
 			}).catch((error) => {
 				transaction(() => {
 					error.transactions();
-					failed();
+					try {
+						failed(error.response.data.message);
+					} catch(e) {
+						failed();
+					}
 				});
 			});
 		} else {
@@ -76,7 +84,7 @@ class LoginModal extends React.Component {
 
 	render() {
 		const isAlert = this.state.lastLoginFailed ? 
-			<Alert alertType="danger" alertMessage="Oh snap! Information is incorrect." basicAlert={true} ref={this.alert} /> : '';
+			<Alert alertType="danger" alertMessage={this.state.lastLoginError} basicAlert={true} ref={this.alert} /> : '';
 
 		return (
 		  	<div id="login-modal" className="modal">

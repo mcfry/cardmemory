@@ -67,7 +67,7 @@ class User {
 				this.setIsLoading(false);
 
 				reject({
-					response: error,
+					response: error.response,
 					transactions: () => {
 						this.setIsLoading(false);
 			    	}
@@ -78,9 +78,9 @@ class User {
 
 	logIn(username = null, password = null) {
 	    if (username && password) {
-	      return this.createSession(username, password);
+			return this.createSession(username, password);
 	    } else if (this.isLoggedIn) { 
-	      return this.logOut();
+			return this.logOut();
 	    }
 	}
 
@@ -163,7 +163,7 @@ class User {
 				    });
 				}).catch((error) => {
 					reject({
-						response: error,
+						response: error.response,
 						transactions: () => {
 							this.setIsLoggedIn(false);
 							this.setIsLoading(false);
