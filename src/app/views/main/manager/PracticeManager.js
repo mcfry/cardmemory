@@ -42,13 +42,14 @@ class Manager extends React.Component {
 	@observable inProgressState = 0;
 	@observable cardsFinished = {};
 	@observable practiceDeck = null;
-	@observable currentStep = 1;
+	@observable currentStep = 0; // actually starts at 1
 	@observable currentMemStep = 1;
 	@observable currentCard = {};
 	@observable currentMistakes = 0;
 	@observable currentMode = 0;
 	@observable currentMethod = 0;
 	@observable activeCardNumber = 0;
+	@observable currentAssist = 0;
 
 	constructor(props) {
 		super(props);
@@ -57,6 +58,7 @@ class Manager extends React.Component {
 		this.selectMode = React.createRef();
 		this.selectNumber = React.createRef();
 		this.selectMethod = React.createRef();
+		this.selectAssist = React.createRef();
 		this.selectDenom = React.createRef();
 		this.selectSuit = React.createRef();
 		this.memTimer = React.createRef();
@@ -97,15 +99,18 @@ class Manager extends React.Component {
 
 		this.cardAnimState = beforeAnim;
 		setTimeout(() => {
-			this.currentCard = this.practiceDeck[this.currentStep-1];
 			if (newIsCardBack) {
 				this.cardAnimState = 'hide';
 				this.cardBackAnimState = afterAnim;
-				if (typeof callback === 'function') {
-					callback();
-				}
 			} else {
 				this.cardAnimState = afterAnim;
+			}
+
+			this.currentStep += 1;
+			this.currentCard = this.practiceDeck[this.currentStep-1];
+
+			if (typeof callback === 'function') {
+				callback();
 			}
 		}, delay);
 	}
@@ -163,7 +168,15 @@ class Manager extends React.Component {
 		// Clicked Next
 		if (this.currentStep < this.activeCardNumber) {
 			if (this.inProgressState === 1) {
-				this.currentStep += 1;
+				// if (this.currentStep%3 === 0) {
+				// 	this.nextButtonDisabled = true;
+				// 	this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
+				// 	setTimeout(() => {
+				// 		this.nextButtonDisabled = false;
+				// 	}, 1000);
+				// } else {
+				// 	this.currentStep += 1;
+				// }
 				this.nextButtonDisabled = true;
 				this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
 				setTimeout(() => {
@@ -174,7 +187,6 @@ class Manager extends React.Component {
 				if (this.currentMode === 'Flash Cards') {
 					if (this.cardName.current && !String.isEmpty(this.cardName.current.value)) {
 						if (levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2) {
-							this.currentStep += 1;
 							this.nextButtonDisabled = true;
 							this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
 							setTimeout(() => {
@@ -203,7 +215,6 @@ class Manager extends React.Component {
 
 								setTimeout(() => {
 									// Get next card
-									this.currentStep += 1;
 									this.cardName.current.value = "";
 									this.cardName.current.focus();
 									this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight', true);
@@ -238,7 +249,6 @@ class Manager extends React.Component {
 
 								setTimeout(() => {
 									// Get next card
-									this.currentStep += 1;
 									this.selectSuit.current.value = "0";
 									this.selectDenom.current.value = "0";
 									this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight', true);
@@ -317,7 +327,6 @@ class Manager extends React.Component {
 			return;
 		} else {
 			if (this.currentStep < this.activeCardNumber) {
-				this.currentStep += 1;
 				this.nextButtonDisabled = true;
 				this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
 				setTimeout(() => {
@@ -370,7 +379,7 @@ class Manager extends React.Component {
 		// Default value === string 0, returned by default from html attr or if not rendered
 		const cardMode = this.selectMode.current ? this.selectMode.current.value : '0';
 		const cardNumber = this.selectNumber.current ? this.selectNumber.current.value : '0';
-		const cardMethod  = this.selectMethod.current ? this.selectMethod.current.value : '0';
+		const cardMethod = this.selectMethod.current ? this.selectMethod.current.value : '0';
 
 		if (cardMode === 'Memorize the Deck' && (cardNumber === '0' || cardMethod === '0')) {
 			this.props.Alert.pushItem('alerts', {
@@ -401,6 +410,7 @@ class Manager extends React.Component {
 				this.inProgressState = 1;
 				this.activeCardNumber = parseInt(this.selectNumber.current.value, 10);
 				this.currentMethod = this.selectMethod.current.value;
+				this.currentAssist = this.selectAssist.current.value;
 			} else {
 				this.inProgressState = 3;
 				this.activeCardNumber = this.cardsFinished.length;
@@ -417,7 +427,7 @@ class Manager extends React.Component {
 	resetPractice() {
 		this.inProgressState = 0;
 		this.currentMistakes = 0;
-		this.currentStep = 1;
+		this.currentStep = 0; // actually = 1
 		this.currentMemStep = 1;
 		this.inputAnimClasses = 'd-none';
 
@@ -439,6 +449,10 @@ class Manager extends React.Component {
 			this.selectMethod.current.value = 0;
 			this.currentMethod = 0;
 		}
+		if (this.selectAssist.current) {
+			this.selectAssist.current.value = 0;
+			this.currentAssist = 0;
+		}
 	}
 
 	startRecall() {
@@ -447,8 +461,8 @@ class Manager extends React.Component {
 				this.recallTimer.current.startTimer();
 			}
 
+			this.currentStep = 0;
 			this.inProgressState = 3;
-			this.currentStep = 1;
 			this.setCurrentCardAndAnimate('hide', 'bounceInRight', true, 500, () => {
 				this.inputAnimClasses = 'none';
 			});
@@ -511,7 +525,6 @@ class Manager extends React.Component {
 
 	componentDidMount() {
 		this.getCardsFinished();
-
 		document.addEventListener("keydown", this.handleKeyDown);
 	}
 
@@ -521,6 +534,7 @@ class Manager extends React.Component {
 
 	render() {
 		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, { 
+			'card-mini': this.currentAssist !== 'None' && this.currentMode !== 'Flash Cards',
 			'bg-light': this.props.Manager.deckObject.deck_info.deck_type === 'light',
 			'bg-dark': this.props.Manager.deckObject.deck_info.deck_type === 'dark',
 			'text-white': this.props.Manager.deckObject.deck_info.deck_type === 'dark',
@@ -528,6 +542,7 @@ class Manager extends React.Component {
 		});
 
 		const deckTypeBackClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardBackAnimState, { 
+			'card-mini': this.currentAssist !== 'None' && this.currentMode !== 'Flash Cards',
 			'bg-light': this.props.Manager.deckObject.deck_info.deck_type === 'light',
 			'bg-dark': this.props.Manager.deckObject.deck_info.deck_type === 'dark',
 			'd-none': this.inProgressState !== 3 || this.cardBackAnimState === 'hide'
@@ -544,6 +559,47 @@ class Manager extends React.Component {
 			practiceCpMarginBottom = '-140px';
 		} else if (this.inProgressState >= 2) {
 			practiceCpMarginBottom = '-230px';
+		}
+
+		// const currentThreeStep = (this.currentStep-1)%3;
+
+		// let cardProps = {};
+		// if (this.practiceDeck !== null && this.currentMode !== 'Flash Cards') {
+		// 	cardProps.cardTitle = this.practiceDeck[this.currentStep-1-currentThreeStep].name;
+		// 	cardProps.cardImg = this.practiceDeck[this.currentStep-1-currentThreeStep].image_url;
+		// 	cardProps.cardImgTx = this.practiceDeck[this.currentStep-1-currentThreeStep].image_tx;
+		// 	cardProps.cardImgTy = this.practiceDeck[this.currentStep-1-currentThreeStep].image_ty;
+		// 	cardProps.cardImgH = this.practiceDeck[this.currentStep-1-currentThreeStep].image_h;
+		// 	cardProps.cardImgW = this.practiceDeck[this.currentStep-1-currentThreeStep].image_w;
+
+		// 	if (currentThreeStep >= 1)
+		// 		cardProps.action1 = this.practiceDeck[this.currentStep-1-currentThreeStep+1].action1;
+
+		// 	if (currentThreeStep >= 2) {
+		// 		cardProps.action2 = this.practiceDeck[this.currentStep-1].action2;
+		// 		cardProps.objectImgTx = this.practiceDeck[this.currentStep-1].action2_tx;
+		// 		cardProps.objectImgTy = this.practiceDeck[this.currentStep-1].action2_ty;
+		// 		cardProps.objectImgH = this.practiceDeck[this.currentStep-1].action2_h;
+		// 		cardProps.objectImgW = this.practiceDeck[this.currentStep-1].action2_w;
+		// 	}
+		// }
+
+		let cardProps = {};
+		if (this.practiceDeck !== null && this.currentAssist === 'None') {
+			cardProps.cardTitle = this.currentCard.name;
+			cardProps.cardImg = this.currentCard.image_url;
+			cardProps.cardImgTx = this.currentCard.image_tx;
+			cardProps.cardImgTy = this.currentCard.image_ty;
+			cardProps.cardImgH = this.currentCard.image_h;
+			cardProps.cardImgW = this.currentCard.image_w;
+			cardProps.action1 = this.currentCard.action1;
+			cardProps.action2 = this.currentCard.action2;
+			cardProps.objectImgTx = this.currentCard.action2_tx;
+			cardProps.objectImgTy = this.currentCard.action2_ty;
+			cardProps.objectImgH = this.currentCard.action2_h;
+			cardProps.objectImgW = this.currentCard.action2_w;
+		} else if (this.currentMode !== 'Flash Cards') {
+			cardProps.isBasic = true;
 		}
 
 		// TODO: Clean up
@@ -631,6 +687,17 @@ class Manager extends React.Component {
 										      })}
 										    </select>
 										</div>
+
+										<div className="form-group">
+										    <select className="custom-select" defaultValue="0" ref={this.selectAssist}>
+										      <option value="0" disabled>Memory palace</option>
+										      {['Default', 'None'].map((method, index) => {
+										      	return (<option key={index} value={method}>
+										      				{method}
+										      			</option>)
+										      })}
+										    </select>
+										</div>
 									</React.Fragment>
 								) : ''}
 
@@ -657,11 +724,8 @@ class Manager extends React.Component {
 											{this.inProgressState === 1 || this.inProgressState === 3 ? (
 												<Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom}
 													  cardSuitImg={this.getCardSuitImage()} cardImgAlt=""
-													  cardTitle={this.currentMode === 'Flash Cards' ? null : this.currentCard.name}
-													  cardImg={this.currentMode === 'Flash Cards' ? null : this.currentCard.image_url}
-													  cardName={this.currentMode === 'Flash Cards' ? null : this.currentCard.name}
-													  action1={this.currentMode === 'Flash Cards' ? null : this.currentCard.action1}
-													  action2={this.currentMode === 'Flash Cards' ? null : this.currentCard.action2} />
+													  {...cardProps}
+													/>
 											) : <React.Fragment></React.Fragment>}
 
 											{this.inProgressState === 2 ? (
@@ -676,7 +740,7 @@ class Manager extends React.Component {
 												<React.Fragment>
 													{this.currentMode !== 'Flash Cards' ? 
 														<Card klasses={deckTypeBackClasses} cardImgAlt="card-background"
-														  cardImg={cardBackImg} isCardBack={true} />
+														  cardImg={cardBackImg} isCardBack={true} isBasic={this.currentAssist !== 'None'} />
 													: ''}
 
 													{this.currentMethod === 'Card Name' ? (
@@ -741,48 +805,12 @@ class Manager extends React.Component {
 											) : <React.Fragment></React.Fragment>}
 
 										</div>
-
-										{this.currentMode !== 'Flash Cards' ? (
-											<div className="kitchen-mem-palace mx-auto card">
-												{Array.apply(null, 
-													Array(this.currentMemStep >= 26 ? 26 : this.currentMemStep-1)
-												).map((_, card_number) => {
-													return (
-														<div key={card_number} className={"card mini-card animated card-animate jackInTheBox mb-3 background-card kitchen" + card_number}>
-															<span className={card_number+1 > 9 ? "mini-card-text-double" : "mini-card-text-single"}>
-																{this.inProgressState === 3 && card_number < this.currentStep-1 ? (
-																	<i className="fa fa-check" style={{'color': 'green'}} aria-hidden="true"></i>
-																) : (
-																	<b>{card_number+1}</b>
-																)}
-															</span>
-														</div>
-													)
-												})}
-											</div>
-										) : ''}
 									</div>
 
-									{this.activeCardNumber > 26 && this.currentMode !== 'Flash Cards' ? (
-										<div className="container">
-											<div className="living-room-mem-palace mx-auto">
-												{Array.apply(null, 
-													Array(this.currentMemStep > 26 ? this.currentMemStep-26-1 : 0)
-												).map((_, card_number) => {
-													return (
-														<div key={card_number+26} className={"card mini-card animated card-animate jackInTheBox mb-3 background-card living" + (card_number+26)}>
-															<span className="mini-card-text-double">
-																{this.inProgressState === 3 && card_number < this.currentStep-1 ? (
-																	<i className="fa fa-check" style={{'color': 'green'}} aria-hidden="true"></i>
-																) : (
-																	<b>{card_number+27}</b>
-																)}
-															</span>
-														</div>
-													)
-												})}
-											</div>
-										</div>
+									{this.selectAssist === 'Normal' ? (
+										<React.Fragment>
+											
+										</React.Fragment>
 									) : ''}
 								</div>
 							)}

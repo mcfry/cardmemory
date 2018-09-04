@@ -22,7 +22,7 @@ import './Manager.css';
 		Manager: RootStore.ManagerStore
 	}
 }) @observer
-class Manager extends React.Component {
+class CreateManager extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -189,4 +189,4 @@ class Manager extends React.Component {
 	}
 }
 
-export default Manager;
+export default CreateManager;

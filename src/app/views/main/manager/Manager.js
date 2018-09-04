@@ -6,6 +6,7 @@ import { withRouter } from 'react-router-dom';
 // Components
 import CreateManager from './CreateManager.js';
 import EditManager from './EditManager.js';
+import MemPalaces from './MemPalaces.js';
 import PracticeManager from './PracticeManager.js';
 import Scoreboard from './Scoreboard.js';
 import Loading from '../../basic_components/Loading.js';
@@ -52,8 +53,12 @@ class Manager extends React.Component {
 								        ) : (
 								        	<React.Fragment>
 									            <li className="nav-item pull-left">
-									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Edit' ? " active show" : "")} 
-									              	 onClick={this.subNavClick.bind(this, 'Edit')} data-toggle="tab">Edit</a>
+									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Edit Deck' ? " active show" : "")} 
+									              	 onClick={this.subNavClick.bind(this, 'Edit Deck')} data-toggle="tab">Edit Deck</a>
+									            </li>
+									            <li className="nav-item pull-left">
+									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Memory Palaces' ? " active show" : "")} 
+									              	 onClick={this.subNavClick.bind(this, 'Memory Palaces')} data-toggle="tab">Memory Palaces</a>
 									            </li>
 									            <li className="nav-item pull-left">
 									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Practice' ? " active show" : "")} 
@@ -94,7 +99,8 @@ class Manager extends React.Component {
 							            		<CreateManager isActive={this.props.Manager.currentSubNav === 'Create'} />
 							            	: 
 							            		<React.Fragment>
-													<EditManager isActive={this.props.Manager.currentSubNav === 'Edit'} />
+													<EditManager isActive={this.props.Manager.currentSubNav === 'Edit Deck'} />
+													<MemPalaces isActive={this.props.Manager.currentSubNav === 'Memory Palaces'} />
 													<PracticeManager isActive={this.props.Manager.currentSubNav === 'Practice'} />
 													<Scoreboard isActive={this.props.Manager.currentSubNav === 'Scoreboard'} />
 												</React.Fragment>

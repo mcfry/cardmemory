@@ -34,6 +34,7 @@ class Manager extends React.Component {
 	@observable currentSuit = 'hearts';
 	@observable currentDenom = 'Ace';
 	@observable cardAnimState = 'bounceInRight';
+	@observable changeCardDisabled = false;
 
 	constructor(props) {
 		super(props);
@@ -76,14 +77,14 @@ class Manager extends React.Component {
 	}
 
 	suitChange(suit) {
-		if (this.currentSuit !== suit) {
+		if (this.changeCardDisabled === false && this.currentSuit !== suit) {
 			this.updateCurrentImageData();
 			this.setCurrentCard(suit, this.currentDenom);
 		}
 	}
 
 	denomChange(denom) {
-		if (this.currentDenom !== denom) {
+		if (this.changeCardDisabled === false && this.currentDenom !== denom) {
 			this.updateCurrentImageData();
 			this.setCurrentCard(this.currentSuit, denom);
 		}
@@ -102,7 +103,7 @@ class Manager extends React.Component {
 	}
 
 	clearField(fieldRef, fieldName) {
-		if (fieldRef.current) {
+		if (this.changeCardDisabled === false && fieldRef.current) {
 			fieldRef.current.value = "";
 			if (fieldName === 'cardImage') {
 				this.clearImageData(true, false);
@@ -117,19 +118,11 @@ class Manager extends React.Component {
 	clearImageData(clearCard = true, clearObj = true) {
 		if (this.cardElem.current) {
 			if (clearCard === true) {
-				this.cardElem.current.cardImageRef.current.src = "";
-				this.cardElem.current.cardImageRef.current.removeAttribute('style');
-				this.cardElem.current.cardImageRef.current.removeAttribute('data-xp');
-				this.cardElem.current.cardImageRef.current.removeAttribute('data-yp');
-				this.cardElem.current.cardImageRef.current.innerHTML = "";
+				this.cardElem.current.clearCardImage();
 			}
 
 			if (clearObj === true) {
-				this.cardElem.current.objectImageRef.current.src = "";
-				this.cardElem.current.objectImageRef.current.removeAttribute('style');
-				this.cardElem.current.objectImageRef.current.removeAttribute('data-xp');
-				this.cardElem.current.objectImageRef.current.removeAttribute('data-yp');
-				this.cardElem.current.objectImageRef.current.innerHTML = "";
+				this.cardElem.current.clearObjectImage();
 			}
 		}
 	}
@@ -138,33 +131,32 @@ class Manager extends React.Component {
 		const suitNumeric = this.suitsEnum[this.currentSuit];
 		const denomNumeric = this.denomsEnum[this.currentDenom];
 
-		let image_tx = this.cardElem.current.cardImageRef.current.getAttribute('data-xp') || null;
-		let image_ty = this.cardElem.current.cardImageRef.current.getAttribute('data-yp') || null;
-		let image_h = this.cardElem.current.cardImageRef.current.style.height || null;
-		let image_w = this.cardElem.current.cardImageRef.current.style.width || null;
-		let image_url = this.cardElem.current.cardImageRef.current.getAttribute('src') || null;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_url = image_url;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_tx = image_tx;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_ty = image_ty;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_h = image_h === null ? null : image_h.slice(0,-2);
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_w = image_w === null ? null : image_w.slice(0,-2);
+		if (this.cardElem.current) {
+			const imageData = this.cardElem.current.cardImageData();
+			if (imageData !== null) {
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_url = imageData.image_url;
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_tx = imageData.image_tx;
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_ty = imageData.image_ty;
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_h = imageData.image_h === null ? null : imageData.image_h.slice(0,-2);
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].image_w = imageData.image_w === null ? null : imageData.image_w.slice(0,-2);
+			}
 
-		let action2_tx = this.cardElem.current.objectImageRef.current.getAttribute('data-xp') || null;
-		let action2_ty = this.cardElem.current.objectImageRef.current.getAttribute('data-yp') || null;
-		let action2_h = this.cardElem.current.objectImageRef.current.style.height || null;
-		let action2_w = this.cardElem.current.objectImageRef.current.style.width || null;
-		let action2 = this.cardElem.current.objectImageRef.current.getAttribute('src') || null;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2 = action2;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_tx = action2_tx;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_ty = action2_ty;
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_h = action2_h === null ? null : action2_h.slice(0,-2);
-		this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_w = action2_w === null ? null : action2_w.slice(0,-2);
+			const objImageData = this.cardElem.current.objectImageData();
+			if (objImageData !== null) {
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2 = objImageData.image_url;
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_tx = objImageData.image_tx;
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_ty = objImageData.image_ty;
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_h = objImageData.image_h === null ? null : objImageData.image_h.slice(0,-2);
+				this.props.Manager.deckObject.cards[suitNumeric][denomNumeric].action2_w = objImageData.image_w === null ? null : objImageData.image_w.slice(0,-2);
+			}
+		}
 	}
 
 	setCurrentCard(suit, denom, first=false) {
 		if (first === false)
 			this.cardAnimState = 'bounceOutLeft';
 
+		this.changeCardDisabled = true;
 		setTimeout(() => {
 			const suitNumeric = this.suitsEnum[suit];
 			const denomNumeric = this.denomsEnum[denom];
@@ -173,6 +165,7 @@ class Manager extends React.Component {
 					const cardObj = this.props.Manager.deckObject.cards[suitNumeric][denomNumeric];
 
 					try {
+						// Update uncontrolled components
 						this.imageUrl.current.value = cardObj.image_url;
 						this.cardName.current.value = cardObj.name;
 						this.action1.current.value = cardObj.action1;
@@ -194,6 +187,11 @@ class Manager extends React.Component {
 			this.currentSuit = suit;
 			this.currentDenom = denom;
 			this.cardAnimState = 'bounceInRight';
+
+			// Delay this a bit, feels too fast
+			setTimeout(() => {
+				this.changeCardDisabled = false;
+			}, 500);
 		}, 400);
 	}
 

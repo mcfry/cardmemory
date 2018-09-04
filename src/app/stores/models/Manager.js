@@ -2,6 +2,7 @@
 import { saveAs } from 'file-saver/FileSaver';
 import { observable, action } from 'mobx';
 import axios from 'axios';
+import activeStorageUpload from '../../../activeStorageUpload';
 import LZString from 'lz-string';
 
 class Manager {
@@ -17,6 +18,7 @@ class Manager {
 	@observable currentSubNav = "Create";
 	@observable isLoading = false;
 	@observable deckObject = null; // cards: {name, image_url, action1, action2}, deck_info: {}
+	@observable memPalacesObj = null; // name: [image_urls]
 	@observable bestTimes = [];
 
 	@action setCurrentSubNav(subNav) {
@@ -32,8 +34,12 @@ class Manager {
 		if (deckObject === null) {
 			this.currentSubNav = "Create";
 		} else {
-			this.currentSubNav = "Edit";
+			this.currentSubNav = "Edit Deck";
 		}
+	}
+
+	@action setMemPalaces(memPalacesObj) {
+		this.memPalacesObj = memPalacesObj;
 	}
 
 	@action setCards(cards) {
@@ -206,6 +212,28 @@ class Manager {
 		    	this.setIsLoading(false);
 			}).catch((error) => {
 				this.setDeckObject(null);
+				this.setIsLoading(false);
+			});
+		}
+
+		loadMemoryPalaces() {
+			this.setIsLoading(true);
+			axios({
+				url: `http://0.0.0.0:3001/api/v1/memory_palaces`, 
+		        method: 'get',
+		        headers: {
+		          'Content-Type': 'application/json',
+		          'X-User-Email': localStorage.getItem('email'),
+		          'X-User-Token': localStorage.getItem('authentication_token')
+		        }
+		    }).then((response) => {
+		    	let memPalacesObj = observable.object(response.data);
+		    	this.setMemPalaces(memPalacesObj);
+		    	this.setIsLoading(false);
+			}).catch((error) => {
+				console.log(error.response);
+
+				this.setMemPalaces(null);
 				this.setIsLoading(false);
 			});
 		}

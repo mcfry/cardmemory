@@ -153,6 +153,7 @@ class User {
 					});
 
 					this.rootStore.ManagerStore.loadDeck();
+					this.rootStore.ManagerStore.loadMemoryPalaces();
 
 					resolve({
 						response: response,
@@ -185,6 +186,8 @@ class User {
 		        }
 		    }).then((response) => {
 		    	this.rootStore.ManagerStore.loadDeck();
+		    	this.rootStore.ManagerStore.loadMemoryPalaces();
+		    	
 				this.setIsLoggedIn(true);
     			this.setIsInitialLoading(false);
 			}).catch((error) => {

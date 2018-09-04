@@ -3,6 +3,10 @@
 	border-radius: 8px;
 }
 
+.card.card-mini {
+	width: 90px;
+}
+
 .card-text {
 	font-size: 11px;
 }
@@ -57,6 +61,16 @@
 .bottom-suit {
 	margin-top: -4px;
 	margin-right: -44px;
+}
+
+.suit-mini {
+	height: 16px;
+	width: 16px;
+	margin-left: 1px;
+}
+
+.suit-text-mini {
+	font-size: 20px;
 }
 
 .col-form-label {

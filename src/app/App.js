@@ -18,8 +18,10 @@ import Routes from './routes/Routes';
 // Header/Footers
 import NavbarInternal from './views/main/header/NavbarInternal';
 
-// Components
+// Components (context/provided using Mobx)
 import AlertMain from './views/main/alert/AlertMain';
+
+// Providers
 
 // NOTE: Wrap all components being observed with withRouter, 
 //  issue: https://github.com/ReactTraining/react-router/blob/master/packages/react-router/docs/guides/blocked-updates.md
