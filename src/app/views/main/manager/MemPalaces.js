@@ -3,7 +3,6 @@ import React from "react";
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import classNames from "classnames";
 
 // Css
 import './Manager.css';
@@ -29,6 +28,19 @@ class MemPalaces extends React.Component {
 
 		// Refs\
 		this.memPalaceForm = React.createRef();
+		this.groupsInput = React.createRef();
+	}
+
+	addMemoryPalace() {
+	}
+
+	deleteMemoryPalace() {
+	}
+
+	addImage() {
+	}
+
+	deleteImage() {
 	}
 
 	updateCurrentPalaceName(name) {
@@ -40,10 +52,16 @@ class MemPalaces extends React.Component {
 		this.currentImageIndex = index;
 	}
 
+	updateCurrentGroupInput() {
+		if (this.groupsInput.current) {
+			this.props.Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex] = this.groupsInput.current.value;
+		}
+	}
+
 	render() {
 		return(
 			<div id="memory-palace-tab" className="tab-content">
-				<div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")}>
+				<div className={"tab-pane fade" + (this.props.Manager.currentSubNav === 'Memory Palaces' ? " active show" : "")}>
 
 					{this.props.Manager.memPalacesObj !== null ? (
 						<div className="container">
@@ -56,23 +74,51 @@ class MemPalaces extends React.Component {
 											</a>
 										))}
 									</div>
+
+									<div className="list-group">
+									  <a className="list-group-item list-group-item-action" onClick={this.addMemoryPalace.bind(this)}>
+									 	<i className="fa fa-plus"></i>&nbsp;<span className="align-suit-text">New Palace</span>
+									  </a>
+									  <a className="list-group-item list-group-item-action" onClick={this.deleteMemoryPalace.bind(this)}>
+									 	<i className="fa fa-trash"></i>&nbsp;<span className="align-suit-text">Delete Palace</span>
+									  </a>
+									</div>
 								</div>
 
 								<div className="col-md-2 col-horiz-reduce-pad">
 						            <div className="list-group list-group-nopad">
-										{this.props.Manager.memPalacesObj[this.currentPalaceName].map((path, index) => (
+										{this.props.Manager.memPalacesObj[this.currentPalaceName].image_urls.map((path, index) => (
 											<a key={index} onClick={this.updateCurrentImageIndex.bind(this, index)} className={"list-group-item list-group-item-center list-group-item-action" + (this.currentImageIndex === index ? " active" : "")}>
-												{path.slice(0, 10)}
+												Image {index}
 											</a>
 										))}
+									</div>
+
+									<div className="list-group">
+									  <a className="list-group-item list-group-item-action" onClick={this.addImage.bind(this)}>
+									 	<i className="fa fa-plus"></i>&nbsp;<span className="align-suit-text">New Image</span>
+									  </a>
+									  <a className="list-group-item list-group-item-action" onClick={this.deleteImage.bind(this)}>
+									 	<i className="fa fa-trash"></i>&nbsp;<span className="align-suit-text">Delete Image</span>
+									  </a>
 									</div>
 								</div>
 
 								<div className="col-md-8">
 						            <div className="container">
 
-							            <form ref={this.memPalaceForm}>
-										</form>
+						            	<div className="row">
+							            	<div className="col-md-8">
+								            	<div className="form-group">
+													<label htmlFor="groups-input">Number of spots you want to use in this image (info hover)</label>
+													<input type="text" className="form-control col-md-1" id="groups-input" value={this.props.Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex]} onChange={this.updateCurrentGroupInput.bind(this)} ref={this.groupsInput} />
+												</div>
+											</div>
+							            </div>
+
+							            <div className="row">
+							            	<img className="img-fluid" alt="memory-palace" src={"http://0.0.0.0:3001/" + this.props.Manager.memPalacesObj[this.currentPalaceName].image_urls[this.currentImageIndex]}/>
+						            	</div>
 
 						            </div>
 

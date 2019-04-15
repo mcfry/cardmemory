@@ -2,7 +2,7 @@
 import { saveAs } from 'file-saver/FileSaver';
 import { observable, action } from 'mobx';
 import axios from 'axios';
-import activeStorageUpload from '../../../activeStorageUpload';
+//import activeStorageUpload from '../../../activeStorageUpload';
 import LZString from 'lz-string';
 
 class Manager {
@@ -22,6 +22,7 @@ class Manager {
 	@observable bestTimes = [];
 
 	@action setCurrentSubNav(subNav) {
+		if (subNav === 'Edit Deck') this.loadDeck(); // TODO: use dirty flag, only fetch if changed
 		this.currentSubNav = subNav;
 	}
 
@@ -35,6 +36,13 @@ class Manager {
 			this.currentSubNav = "Create";
 		} else {
 			this.currentSubNav = "Edit Deck";
+		}
+	}
+
+	// NOTE: Because MobX updates by access, and not value, the full object path must be accessed
+	@action updateCard(suit, denom, newFields) {
+		for (let key in newFields) {
+			this.deckObject.cards[suit][denom][key] = newFields[key];
 		}
 	}
 

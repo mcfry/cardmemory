@@ -16,16 +16,25 @@
     "mobx-react": "^5.0.0",
     "react": "^16.3.0",
     "react-app-rewire-mobx": "^1.0.8",
-    "react-app-rewired": "^1.5.0",
+    "react-app-rewired": "^1.6.2",
     "react-dom": "^16.3.0",
     "react-error-overlay": "4.0.0",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "1.1.1"
+    "react-scripts": "2.1.1"
   },
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-app-rewired eject"
-  }
+  },
+  "devDependencies": {
+    "customize-cra": "^0.2.12"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

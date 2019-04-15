@@ -2,6 +2,7 @@
 import React from "react";
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
+import classNames from 'classnames';
 
 // Components
 import CreateManager from './CreateManager.js';
@@ -23,57 +24,56 @@ import './Manager.css';
 class Manager extends React.Component {
 	constructor(props) {
 		super(props);
-
-		// Func Binds
-		this.subNavClick = this.subNavClick.bind(this);
 	}
 
-	subNavClick(tabStr) {
-		this.props.Manager.setCurrentSubNav(tabStr);
+	subNavClick = () => (event) => {
+		this.props.Manager.setCurrentSubNav(event.target.text);
 	}
+
+	checkActive = (current) => this.props.Manager.currentSubNav === current;
 
 	render() {
+		const { User, Manager } = this.props;
+
+		let navClasses = {
+			createClasses: classNames('nav-link', {'active show': this.checkActive('Create')}), 
+			editClasses: classNames('nav-link', {'active show': this.checkActive('Edit Deck')}),
+			memPalClasses: classNames('nav-link', {'active show': this.checkActive('Memory Palaces')}),
+			pracClasses: classNames('nav-link', {'active show': this.checkActive('Practice')}),
+			scoreClasses: classNames('nav-link', {'active show': this.checkActive('Scoreboard')})
+		} ;
+
 		return(
 			<div className="manager">
 				<ul className="nav nav-tabs">
 					<div className="container">
-			        		<div className={this.props.User.isLoading || this.props.Manager.isLoading ? 'd-none' : ''}>
-			        			{!this.props.User.isLoggedIn ? (
-									<li className="nav-item pull-left">
-						              <a className={"nav-link active show"} 
-						              	 onClick={this.subNavClick.bind(this, 'Info')} data-toggle="tab">Info</a>
+		        		<div className={classNames({'d-none': User.isLoading || Manager.isLoading})}>
+		        			{!User.isLoggedIn ? (
+								<li className="nav-item pull-left">
+					              <a className={"nav-link active show"} 
+					              	 onClick={this.subNavClick()} data-toggle="tab">Info</a>
+					            </li>
+					        ) : (<>
+			        			{Manager.deckObject === null ? (
+						            <li className="nav-item pull-left">
+						              <a className={navClasses.createClasses} onClick={this.subNavClick()} data-toggle="tab">Create</a>
 						            </li>
-						        ) : (
-						        	<React.Fragment>
-					        			{this.props.Manager.deckObject === null ? (
-								            <li className="nav-item pull-left">
-								              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Create' ? " active show" : "")} 
-								              	 onClick={this.subNavClick.bind(this, 'Create')} data-toggle="tab">Create</a>
-								            </li>
-								        ) : (
-								        	<React.Fragment>
-									            <li className="nav-item pull-left">
-									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Edit Deck' ? " active show" : "")} 
-									              	 onClick={this.subNavClick.bind(this, 'Edit Deck')} data-toggle="tab">Edit Deck</a>
-									            </li>
-									            <li className="nav-item pull-left">
-									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Memory Palaces' ? " active show" : "")} 
-									              	 onClick={this.subNavClick.bind(this, 'Memory Palaces')} data-toggle="tab">Memory Palaces</a>
-									            </li>
-									            <li className="nav-item pull-left">
-									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Practice' ? " active show" : "")} 
-									              	 onClick={this.subNavClick.bind(this, 'Practice')} data-toggle="tab">Practice</a>
-									            </li>
-									            <li className="nav-item pull-left">
-									              <a className={"nav-link" + (this.props.Manager.currentSubNav === 'Scoreboard' ? " active show" : "")} 
-									              	 onClick={this.subNavClick.bind(this, 'Scoreboard')} data-toggle="tab">Scoreboard</a>
-									            </li>
-
-									        </React.Fragment>
-								        )}
-							     	</React.Fragment>
-							    )}
-				        	</div>
+						        ) : (<>
+						            <li className="nav-item pull-left">
+						              <a className={navClasses.editClasses} onClick={this.subNavClick()} data-toggle="tab">Edit Deck</a>
+						            </li>
+						            <li className="nav-item pull-left">
+						              <a className={navClasses.memPalClasses} onClick={this.subNavClick()} data-toggle="tab">Memory Palaces</a>
+						            </li>
+						            <li className="nav-item pull-left">
+						              <a className={navClasses.pracClasses} onClick={this.subNavClick()} data-toggle="tab">Practice</a>
+						            </li>
+						            <li className="nav-item pull-left">
+						              <a className={navClasses.scoreClasses} onClick={this.subNavClick()} data-toggle="tab">Scoreboard</a>
+						            </li>
+						        </>)}
+						    </>)}
+			        	</div>
 			        </div>
 		        </ul>
 
@@ -81,38 +81,27 @@ class Manager extends React.Component {
 
 				<div className="container-fluid">
 					<div className="row">
-			            <div className="col-2">
-			            </div>
-
+			            <div className="col-2"></div>
 			            <div className="col-8">
-					        {this.props.User.isLoading || this.props.Manager.isLoading ? (
+					        {User.isLoading || Manager.isLoading ? (
 					        	<Loading/>
-				        	) : (
-				        		<React.Fragment>
-					        		{!this.props.User.isLoggedIn ? (
-						            	<div className={"tab-pane fade active show"}>
-							              <p>You are not logged in! Please log in first to create and manage a deck.</p>
-							            </div>
-							        ) : (
-							        	<React.Fragment>
-							        		{this.props.Manager.deckObject === null ?
-							            		<CreateManager isActive={this.props.Manager.currentSubNav === 'Create'} />
-							            	: 
-							            		<React.Fragment>
-													<EditManager isActive={this.props.Manager.currentSubNav === 'Edit Deck'} />
-													<MemPalaces isActive={this.props.Manager.currentSubNav === 'Memory Palaces'} />
-													<PracticeManager isActive={this.props.Manager.currentSubNav === 'Practice'} />
-													<Scoreboard isActive={this.props.Manager.currentSubNav === 'Scoreboard'} />
-												</React.Fragment>
-											}
-								        </React.Fragment>
-								    )}
-								</React.Fragment>
-						    )}
+				        	) : (<>
+				        		{!User.isLoggedIn ? (
+					            	<div className={"tab-pane fade active show"}>
+						              <p>You are not logged in! Please log in first to create and manage a deck.</p>
+						            </div>
+						        ) : (<>
+						        		{Manager.deckObject === null && <CreateManager/>}
+						            	{Manager.deckObject !== null && <>
+											<EditManager/>
+											<MemPalaces/>
+											<PracticeManager/>
+											<Scoreboard/>
+										</>}
+								</>)}
+						    </>)}
 					    </div>
-
-			            <div className="col-2">
-			            </div>
+			            <div className="col-2"></div>
 			        </div>
 			    </div>
 			</div>

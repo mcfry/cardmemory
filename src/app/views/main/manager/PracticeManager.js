@@ -27,13 +27,13 @@ import './Manager.css';
 import './MemPalace.css';
 import 'animate.css/animate.min.css';
 
-@withRouter @inject((RootStore) => {
+@withRouter @inject(RootStore => {
 	return {
 		Manager: RootStore.ManagerStore,
 		Alert: RootStore.AlertStore
 	}
 }) @observer
-class Manager extends React.Component {
+class PracticeManager extends React.Component {
 
 	@observable cardAnimState = 'bounceInRight';
 	@observable cardBackAnimState = 'hide';
@@ -55,23 +55,10 @@ class Manager extends React.Component {
 		super(props);
 
 		// refs
-		this.selectMode = React.createRef();
-		this.selectNumber = React.createRef();
-		this.selectMethod = React.createRef();
-		this.selectAssist = React.createRef();
-		this.selectDenom = React.createRef();
-		this.selectSuit = React.createRef();
-		this.memTimer = React.createRef();
-		this.recallTimer = React.createRef();
-		this.cardName = React.createRef();
-		this.goButton = React.createRef();
-		this.nextRoundButton = React.createRef();
-		this.startRecallButton = React.createRef();
-		this.nextCardButton = React.createRef();
-
-		// funcs
-		this.getCardSuitImage = this.getCardSuitImage.bind(this);
-		this.handleKeyDown = this.handleKeyDown.bind(this);
+		for (let key of ['selectMode', 'selectNumber', 'selectMethod', 'selectAssist', 'selectDenom', 
+						 'selectSuit', 'memTimer', 'recallTimer', 'cardName', 'goButton', 'nextRoundButton', 
+						 'startRecallButton', 'nextCardButton'])
+			this[key] = React.createRef();
 
 		// enum (14-2)
 		const denoms = ['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
@@ -90,10 +77,7 @@ class Manager extends React.Component {
 		}
 	}
 
-	setCurrentCardAndAnimate(beforeAnim, afterAnim, newIsCardBack, custom_delay, callback) {
-		beforeAnim = beforeAnim || '';
-		afterAnim = afterAnim || '';
-		newIsCardBack = newIsCardBack || false;
+	setCurrentCardAndAnimate(beforeAnim = '', afterAnim = '', newIsCardBack = false, custom_delay, callback) {
 		let delay = newIsCardBack ? 500 : 400;
 		delay = custom_delay || delay;
 
@@ -109,44 +93,41 @@ class Manager extends React.Component {
 			this.currentStep += 1;
 			this.currentCard = this.practiceDeck[this.currentStep-1];
 
-			if (typeof callback === 'function') {
-				callback();
-			}
+			typeof callback === 'function' && callback();
 		}, delay);
 	}
 
-	getCardSuitImage() {
+	getCardSuitImage = () => {
+		const { suit } = this.currentCard;
+
 		if (this.props.Manager.deckObject.deck_info.deck_type === 'light') {
-			if (this.currentCard.suit === 'hearts') {
-				return heartsImg;
-			} else if (this.currentCard.suit === 'diamonds') {
-				return diamondsImg;
-			} else if (this.currentCard.suit === 'clubs') {
-				return clubsImg;
-			} else {
-				return spadesImg;
+			switch (suit) {
+				case 'hearts': return heartsImg;
+				case 'diamonds': return diamondsImg;
+				case 'clubs': return clubsImg;
+				case 'spades': return spadesImg;
+				default: return '';
 			}
-		} else {
-			if (this.currentCard.suit === 'hearts') {
-				return heartsWhiteImg;
-			} else if (this.currentCard.suit === 'diamonds') {
-				return diamondsWhiteImg;
-			} else if (this.currentCard.suit === 'clubs') {
-				return clubsWhiteImg;
-			} else {
-				return spadesWhiteImg;
+		} else {			
+			switch (suit) {
+				case 'hearts': return heartsWhiteImg;
+				case 'diamonds': return diamondsWhiteImg;
+				case 'clubs': return clubsWhiteImg;
+				case 'spades': return spadesWhiteImg;
+				default: return '';
 			}
 		}
 	}
 
 	getCardsFinished() {
+		const { cards } = this.props.Manager.deckObject;
 		let cardsFinished = [];
 
-		for (let suit in this.props.Manager.deckObject.cards) {
-			for (let denom in this.props.Manager.deckObject.cards[suit]) {
-				const denom_obj = this.props.Manager.deckObject.cards[suit][denom];
+		for (let suit in cards) {
+			for (let denom in cards[suit]) {
+				const denom_obj = cards[suit][denom];
 
-				if ([denom_obj.name, denom_obj.image_url, denom_obj.action1, denom_obj.action2].every((value) => 
+				if ([denom_obj.name, denom_obj.image_url, denom_obj.action1, denom_obj.action2].every(value => 
 					!String.isEmpty(value)
 				)) {
 					denom_obj.suit = this.suitsEnum[suit];
@@ -156,14 +137,12 @@ class Manager extends React.Component {
 				}
 			}
 		}
-
 		this.cardsFinished = cardsFinished;
 	}
 
-	nextCard() {
-		if (this.nextButtonDisabled) {
-			return;
-		}
+	nextCard = () => {
+		if (this.nextButtonDisabled) return;
+		const { Manager } = this.props;
 
 		// Clicked Next
 		if (this.currentStep < this.activeCardNumber) {
@@ -288,7 +267,7 @@ class Manager extends React.Component {
 				if (this.cardName.current && !String.isEmpty(this.cardName.current.value)) {
 					if (levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2) {
 						this.recallTimer.current.stopTimer();
-						this.props.Manager.sendTime({
+						Manager.sendTime({
 							difficulty: this.difficulty(parseInt(this.selectNumber.current.value, 10)),
 							seconds: this.memTimer.current.state.counter + this.recallTimer.current.state.counter,
 							mistakes: this.currentMistakes
@@ -305,7 +284,7 @@ class Manager extends React.Component {
 						this.practiceDeck[this.currentStep-1].suit === this.selectSuit.current.value.toLowerCase()) {
 
 						this.recallTimer.current.stopTimer();
-						this.props.Manager.sendTime({
+						Manager.sendTime({
 							difficulty: this.difficulty(parseInt(this.selectNumber.current.value, 10)),
 							seconds: this.memTimer.current.state.counter + this.recallTimer.current.state.counter,
 							mistakes: this.currentMistakes
@@ -322,29 +301,24 @@ class Manager extends React.Component {
 		}
 	}
 
-	skipCard() {
-		if (this.nextButtonDisabled) {
-			return;
+	skipCard = () => {
+		if (this.nextButtonDisabled) return;
+		
+		if (this.currentStep < this.activeCardNumber) {
+			this.nextButtonDisabled = true;
+			this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
+			setTimeout(() => {
+				this.nextButtonDisabled = false;
+			}, 1000);
 		} else {
-			if (this.currentStep < this.activeCardNumber) {
-				this.nextButtonDisabled = true;
-				this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
-				setTimeout(() => {
-					this.nextButtonDisabled = false;
-				}, 1000);
-			} else {
-				this.inProgressState = 4;
-				this.memTimer.current.stopTimer();
-			}
+			this.inProgressState = 4;
+			this.memTimer.current.stopTimer();
 		}
+
 	}
 
 	processIncorrect() {
-		if (this.currentMode !== 'Flash Cards') {
-			this.cardBackAnimState = 'shake';
-		} else {
-			this.cardAnimState = 'shake';
-		}
+		this.currentMode !== 'Flash Cards' ? this.cardBackAnimState = 'shake' : this.cardAnimState = 'shake';
 		this.currentMistakes += 1;
 
 		if (this.currentMistakes >= 3 && this.currentMode !== 'Flash Cards') {
@@ -355,11 +329,7 @@ class Manager extends React.Component {
 			}, 2000);
 		} else {
 			setTimeout(() => {
-				if (this.currentMode !== 'Flash Cards') {
-					this.cardBackAnimState = 'none';
-				} else {
-					this.cardAnimState = 'none';
-				}
+				this.currentMode !== 'Flash Cards' ? this.cardBackAnimState = 'none' : this.cardAnimState = 'none';
 			}, 400);
 		}
 	}
@@ -375,24 +345,26 @@ class Manager extends React.Component {
 		this.practiceDeck = practiceDeck;
 	}
 
-	startPractice() {
+	startPractice = () => {
+		const { Alert } = this.props;
+
 		// Default value === string 0, returned by default from html attr or if not rendered
 		const cardMode = this.selectMode.current ? this.selectMode.current.value : '0';
 		const cardNumber = this.selectNumber.current ? this.selectNumber.current.value : '0';
 		const cardMethod = this.selectMethod.current ? this.selectMethod.current.value : '0';
 
 		if (cardMode === 'Memorize the Deck' && (cardNumber === '0' || cardMethod === '0')) {
-			this.props.Alert.pushItem('alerts', {
+			Alert.pushItem('alerts', {
 				type: 'error',
 				message: "You must first select the number of cards and method to practice!"
 			});
 		} else if (cardMode === 'Flash Cards' && this.cardsFinished.length < 2) {
-			this.props.Alert.pushItem('alerts', {
+			Alert.pushItem('alerts', {
 				type: 'error',
 				message: "You must completely finish (every field) at least 2 cards before using this mode!"
 			});
 		} else if (cardMode === '0') {
-			this.props.Alert.pushItem('alerts', {
+			Alert.pushItem('alerts', {
 				type: 'error',
 				message: "You must first select a mode to practice!"
 			});
@@ -424,7 +396,7 @@ class Manager extends React.Component {
 		}
 	}
 
-	resetPractice() {
+	resetPractice = () => {
 		this.inProgressState = 0;
 		this.currentMistakes = 0;
 		this.currentStep = 0; // actually = 1
@@ -455,7 +427,8 @@ class Manager extends React.Component {
 		}
 	}
 
-	startRecall() {
+	startRecall = () => {
+		// If valid
 		if (this.inProgressState === 2 && this.currentMemStep-1 === parseInt(this.activeCardNumber, 10)) {
 			if (this.recallTimer.current) {
 				this.recallTimer.current.startTimer();
@@ -466,14 +439,10 @@ class Manager extends React.Component {
 			this.setCurrentCardAndAnimate('hide', 'bounceInRight', true, 500, () => {
 				this.inputAnimClasses = 'none';
 			});
-		} else {
-			// not valid
 		}
 	}
 
-	updateMode() {
-		this.currentMode = this.selectMode.current.value;
-	}
+	updateMode = () => this.currentMode = this.selectMode.current.value;
 
 	difficulty(indexOrNumber) {
 		if (indexOrNumber === 0) {
@@ -493,7 +462,7 @@ class Manager extends React.Component {
 		}
 	}
 
-	handleKeyDown(e) {
+	handleKeyDown = (e) => {
 		if (e.key === 'Enter') {
 			if (this.inProgressState === 0) {
 				if (this.goButton.current) {
@@ -533,22 +502,23 @@ class Manager extends React.Component {
 	}
 
 	render() {
+		const { Manager } = this.props;
 		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, { 
 			'card-mini': this.currentAssist !== 'None' && this.currentMode !== 'Flash Cards',
-			'bg-light': this.props.Manager.deckObject.deck_info.deck_type === 'light',
-			'bg-dark': this.props.Manager.deckObject.deck_info.deck_type === 'dark',
-			'text-white': this.props.Manager.deckObject.deck_info.deck_type === 'dark',
+			'bg-light': Manager.deckObject.deck_info.deck_type === 'light',
+			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
+			'text-white': Manager.deckObject.deck_info.deck_type === 'dark',
 			'd-none': this.cardAnimState === 'hide'
 		});
 
 		const deckTypeBackClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardBackAnimState, { 
 			'card-mini': this.currentAssist !== 'None' && this.currentMode !== 'Flash Cards',
-			'bg-light': this.props.Manager.deckObject.deck_info.deck_type === 'light',
-			'bg-dark': this.props.Manager.deckObject.deck_info.deck_type === 'dark',
+			'bg-light': Manager.deckObject.deck_info.deck_type === 'light',
+			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
 			'd-none': this.inProgressState !== 3 || this.cardBackAnimState === 'hide'
 		});
 
-		const cardBackImg = this.props.Manager.deckObject.deck_info.deck_type === 'light' ? redBackImg : whiteBackImg;
+		const cardBackImg = Manager.deckObject.deck_info.deck_type === 'light' ? redBackImg : whiteBackImg;
 
 		const configDisplay = classNames('mx-auto', { 'd-none': this.inProgressState !== 0 });
 		const practiceDisplay = classNames('practice-display', 'mx-auto', { 'd-none': this.inProgressState === 0 });
@@ -605,7 +575,7 @@ class Manager extends React.Component {
 		// TODO: Clean up
 		return(
 			<div id="edit-deck-tab" className="tab-content">
-				<div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")}>
+				<div className={classNames("tab-pane", "fade", {"active show": Manager.currentSubNav === 'Practice'})}>
 
 					<div className="container">
 						<div className="d-flex flex-column practice-cp" style={{'marginBottom': practiceCpMarginBottom}}>
@@ -616,36 +586,31 @@ class Manager extends React.Component {
 										this.currentMode === 'Flash Cards' ? 'Flash Timer' : 'Memory Timer'
 									) : 'Timer'}:
 								</center> <Timer ref={this.memTimer}/>
-								{this.inProgressState >= 2 && this.currentMode !== 'Flash Cards' ? (
-									<React.Fragment>
-										Recall timer: <Timer ref={this.recallTimer}/>
-										Mistakes: <br/>
-										<div className="mistakes">
-											{this.currentMistakes === 0 ? (
-												<b>None</b>
-											) : (
-												<React.Fragment>
-													{Array.apply(null, 
-														Array(this.currentMistakes)
-													).map((_, mistake_number) => {
-														return (
-															<i key={mistake_number} className="fa fa-times mistake" aria-hidden="true"></i>
-														)
-													})}
-												</React.Fragment>
-											)}
-										</div>
-									</React.Fragment>
-								) : ''}
+
+								{(this.inProgressState >= 2 && this.currentMode !== 'Flash Cards') && <>
+									Recall timer: <Timer ref={this.recallTimer}/>
+									Mistakes: <br/>
+									<div className="mistakes">
+										{this.currentMistakes === 0 ? (
+											<b>None</b>
+										) : (<>
+											{Array.apply(null, 
+												Array(this.currentMistakes)
+											).map((_, mistake_number) => {
+												return (
+													<i key={mistake_number} className="fa fa-times mistake" aria-hidden="true"></i>
+												)
+											})}
+										</>)}
+									</div>
+								</>}
 							</div>
 
-							{this.inProgressState > 0 && this.inProgressState < 4 ? (
-								<div className="pt-2">
-									<button type="button" onClick={this.resetPractice.bind(this)} className="btn btn-danger" style={{'width': '134px'}}>
-										Reset
-									</button>
-								</div>
-							) : ''}
+							{(this.inProgressState > 0 && this.inProgressState < 4) && <div className="pt-2">
+								<button type="button" onClick={this.resetPractice} className="btn btn-danger" style={{'width': '134px'}}>
+									Reset
+								</button>
+							</div>}
 
 						</div>
 
@@ -654,7 +619,7 @@ class Manager extends React.Component {
 							<div className={configDisplay}>
 								<br/><br/>
 								<div className="form-group">
-								    <select className="custom-select" defaultValue="0" onChange={this.updateMode.bind(this)} ref={this.selectMode} autoFocus>
+								    <select className="custom-select" defaultValue="0" onChange={this.updateMode} ref={this.selectMode} autoFocus>
 								      <option value="0" disabled>Review Mode</option>
 								      {['Flash Cards', 'Memorize the Deck'].map((mode, index) => {
 								      	return (<option key={index} value={mode}>
@@ -664,154 +629,138 @@ class Manager extends React.Component {
 								    </select>
 								</div>
 
-								{this.currentMode === 'Memorize the Deck' ? (
-									<React.Fragment>
-										<div className="form-group">
-										    <select className="custom-select" defaultValue="0" ref={this.selectNumber}>
-										      <option value="0" disabled>Number to memorize</option>
-										      {[13,26,39,52].map((number, index) => {
-										      	return (<option key={index} value={number} disabled={this.cardsFinished.length < number}>
-										      				{this.difficulty(index)}: {number}
-										      			</option>)
-										      })}
-										    </select>
-										</div>
+								{this.currentMode === 'Memorize the Deck' && <>
+									<div className="form-group">
+									    <select className="custom-select" defaultValue="0" ref={this.selectNumber}>
+									      <option value="0" disabled>Number to memorize</option>
+									      {[13,26,39,52].map((number, index) => {
+									      	return (<option key={index} value={number} disabled={this.cardsFinished.length < number}>
+									      				{this.difficulty(index)}: {number}
+									      			</option>)
+									      })}
+									    </select>
+									</div>
 
-										<div className="form-group">
-										    <select className="custom-select" defaultValue="0" ref={this.selectMethod}>
-										      <option value="0" disabled>Recall method</option>
-										      {['Suit and Denomination', 'Card Name'].map((method, index) => {
-										      	return (<option key={index} value={method}>
-										      				{method}
-										      			</option>)
-										      })}
-										    </select>
-										</div>
+									<div className="form-group">
+									    <select className="custom-select" defaultValue="0" ref={this.selectMethod}>
+									      <option value="0" disabled>Recall method</option>
+									      {['Suit and Denomination', 'Card Name'].map((method, index) => {
+									      	return (<option key={index} value={method}>
+									      				{method}
+									      			</option>)
+									      })}
+									    </select>
+									</div>
 
-										<div className="form-group">
-										    <select className="custom-select" defaultValue="0" ref={this.selectAssist}>
-										      <option value="0" disabled>Memory palace</option>
-										      {['Default', 'None'].map((method, index) => {
-										      	return (<option key={index} value={method}>
-										      				{method}
-										      			</option>)
-										      })}
-										    </select>
-										</div>
-									</React.Fragment>
-								) : ''}
+									<div className="form-group">
+									    <select className="custom-select" defaultValue="0" ref={this.selectAssist}>
+									      <option value="0" disabled>Memory palace</option>
+									      {['Default', 'None'].map((method, index) => {
+									      	return (<option key={index} value={method}>
+									      				{method}
+									      			</option>)
+									      })}
+									    </select>
+									</div>
+								</>}
 
-								<button type="button" onClick={this.startPractice.bind(this)} ref={this.goButton} className="btn btn-primary btn-danger practice-button-start">Go!</button>
+								<button type="button" onClick={this.startPractice} ref={this.goButton} className="btn btn-primary btn-danger practice-button-start">Go!</button>
 							</div>
 
-							{this.inProgressState === 4 ? (
-								<React.Fragment>
-									<div className="container text-center">
-										<div className="recall animated jackInTheBox">
-											<h1 style={{'fontColor': 'green'}}>Success</h1>
-										</div>
-
-										<button type="button" onClick={this.resetPractice.bind(this)} ref={this.nextRoundButton} className="btn btn-danger recall">
-											Next Round
-										</button>
+							{this.inProgressState === 4 ? (<>
+								<div className="container text-center">
+									<div className="recall animated jackInTheBox">
+										<h1 style={{'fontColor': 'green'}}>Success</h1>
 									</div>
-								</React.Fragment>
-							) : (
+
+									<button type="button" onClick={this.resetPractice} ref={this.nextRoundButton} className="btn btn-danger recall">
+										Next Round
+									</button>
+								</div>
+							</>) : (
 								<div className={practiceDisplay}>
 									<div className="container">
 										<div className="card-memory-main">
 
-											{this.inProgressState === 1 || this.inProgressState === 3 ? (
+											{(this.inProgressState === 1 || this.inProgressState === 3) &&
 												<Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom}
-													  cardSuitImg={this.getCardSuitImage()} cardImgAlt=""
-													  {...cardProps}
-													/>
-											) : <React.Fragment></React.Fragment>}
+													  cardSuitImg={this.getCardSuitImage()} cardImgAlt="" {...cardProps}
+												/>
+											}
 
-											{this.inProgressState === 2 ? (
-												<div className="container text-center">
-													<button type="button" onClick={this.startRecall.bind(this)} ref={this.startRecallButton} className="btn btn-danger recall">
-														Start Recall
-													</button>
-												</div>
-											) : <React.Fragment></React.Fragment>}
+											{this.inProgressState === 2 && <div className="container text-center">
+												<button type="button" onClick={this.startRecall} ref={this.startRecallButton} className="btn btn-danger recall">
+													Start Recall
+												</button>
+											</div>}
 											
-											{this.inProgressState === 3 ? (
-												<React.Fragment>
-													{this.currentMode !== 'Flash Cards' ? 
-														<Card klasses={deckTypeBackClasses} cardImgAlt="card-background"
-														  cardImg={cardBackImg} isCardBack={true} isBasic={this.currentAssist !== 'None'} />
-													: ''}
+											{this.inProgressState === 3 && <>
+												{this.currentMode !== 'Flash Cards' && 
+													<Card klasses={deckTypeBackClasses} cardImgAlt="card-background"
+													  cardImg={cardBackImg} isCardBack={true} isBasic={this.currentAssist !== 'None'} 
+													/>
+												}
 
-													{this.currentMethod === 'Card Name' ? (
-														<div className={"form-group " + this.inputAnimClasses}>
-															<label htmlFor="cardname-input">Card name</label>
-															<input type="text" className="form-control" id="cardname-input" placeholder="Card name" ref={this.cardName}/>
+												{this.currentMethod === 'Card Name' ? (
+													<div className={"form-group " + this.inputAnimClasses}>
+														<label htmlFor="cardname-input">Card name</label>
+														<input type="text" className="form-control" id="cardname-input" placeholder="Card name" ref={this.cardName}/>
+													</div>
+												) : (<>
+													<div className={"form-inline justify-content-center " + this.inputAnimClasses}>
+														<div className="form-group">
+														    <select className="custom-select" defaultValue="0" ref={this.selectDenom}>
+														      <option value="0" disabled>Denomination</option>
+														      {['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'].map(
+														      	(denom, index) => {
+															      	return (<option key={index} value={denom}>
+															      				{denom}
+															      			</option>)
+														      	}
+														      )}
+														    </select>
 														</div>
-													) : (
-														<React.Fragment>
-															<div className={"form-inline justify-content-center " + this.inputAnimClasses}>
-																<div className="form-group">
-																    <select className="custom-select" defaultValue="0" ref={this.selectDenom}>
-																      <option value="0" disabled>Denomination</option>
-																      {['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'].map(
-																      	(denom, index) => {
-																	      	return (<option key={index} value={denom}>
-																	      				{denom}
-																	      			</option>)
-																      	}
-																      )}
-																    </select>
-																</div>
-																&nbsp;<b>of</b>&nbsp;
-																<div className="form-group">
-																    <select className="custom-select" defaultValue="0" ref={this.selectSuit}>
-																      <option value="0" disabled>Suit</option>
-																      {['Spades', 'Clubs', 'Diamonds', 'Hearts'].map(
-																      	(suit, index) => {
-																	      	return (<option key={index} value={suit}>
-																	      				{suit}
-																	      			</option>)
-																      	}
-																      )}
-																    </select>
-																</div>
-															</div>
-															<br/>
-														</React.Fragment>
-													)}
-												</React.Fragment>
-											) : <React.Fragment></React.Fragment>}
+														&nbsp;<b>of</b>&nbsp;
+														<div className="form-group">
+														    <select className="custom-select" defaultValue="0" ref={this.selectSuit}>
+														      <option value="0" disabled>Suit</option>
+														      {['Spades', 'Clubs', 'Diamonds', 'Hearts'].map(
+														      	(suit, index) => {
+															      	return (<option key={index} value={suit}>
+															      				{suit}
+															      			</option>)
+														      	}
+														      )}
+														    </select>
+														</div>
+													</div>
+													<br/>
+												</>)}
+											</>}
 
-											{this.inProgressState === 1 || this.inProgressState === 3 ? (
+											{(this.inProgressState === 1 || this.inProgressState === 3) &&
 												<div className={this.currentMode === 'Flash Cards' ? "next-flash-card-go" : "next-card-go"}>
-													<span><b>{this.currentStep > this.activeCardNumber ? this.activeCardNumber : this.currentStep}</b> of <b>{this.activeCardNumber}</b></span><br/>
-													<button type="button" onClick={this.nextCard.bind(this)} ref={this.nextCardButton} className="btn btn-danger">
-														{this.currentStep < this.activeCardNumber ? (
-															'Next Card'
-														) : ( 
-															'Finish'
-														)}
+													<span><b>
+														{this.currentStep > this.activeCardNumber ? this.activeCardNumber : this.currentStep}</b> of <b>{this.activeCardNumber}
+													</b></span>
+													<br/>
+													<button type="button" onClick={this.nextCard} ref={this.nextCardButton} className="btn btn-danger">
+														{this.currentStep < this.activeCardNumber ? 'Next Card' : 'Finish'}
 													</button>
-													{this.currentMode === 'Flash Cards' ? (
-														<React.Fragment>
-															&nbsp;&nbsp;&nbsp;
-															<button type="button" onClick={this.skipCard.bind(this)} className="btn btn-danger">
-																Skip Card
-															</button>
-														</React.Fragment>
-													) : ''}
+													{this.currentMode === 'Flash Cards' && <>
+														&nbsp;&nbsp;&nbsp;
+														<button type="button" onClick={this.skipCard} className="btn btn-danger">
+															Skip Card
+														</button>
+													</>}
 												</div>
-											) : <React.Fragment></React.Fragment>}
+											}
 
 										</div>
 									</div>
 
-									{this.selectAssist === 'Normal' ? (
-										<React.Fragment>
-											
-										</React.Fragment>
-									) : ''}
+									{this.selectAssist === 'Normal' && <>
+									</>}
 								</div>
 							)}
 
@@ -824,4 +773,4 @@ class Manager extends React.Component {
 	}
 }
 
-export default Manager;
+export default PracticeManager;

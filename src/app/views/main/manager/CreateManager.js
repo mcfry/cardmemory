@@ -16,7 +16,7 @@ import phelpsImg from '../../../images/phelps_ex.png';
 // Css
 import './Manager.css';
 
-@withRouter @inject((RootStore) => {
+@withRouter @inject(RootStore => {
 	return {
 		User: RootStore.UserStore,
 		Manager: RootStore.ManagerStore
@@ -26,40 +26,28 @@ class CreateManager extends React.Component {
 	constructor(props) {
 		super(props);
 
-		// Func Binds
-		this.themeClick = this.themeClick.bind(this);
-		this.createDeck = this.createDeck.bind(this);
-
-		// Refs
-		this.red = React.createRef();
-		this.black = React.createRef();
-		this.hearts = React.createRef();
-		this.diamonds = React.createRef();
-		this.clubs = React.createRef();
-		this.spades = React.createRef();
-		this.theme1 = React.createRef();
-		this.theme2 = React.createRef();
-		this.custom = React.createRef();
-		this.customForm = React.createRef();
+		// refs
+		for (let key of ['red', 'black', 'hearts', 'diamonds', 'clubs', 'spades', 'theme1', 'theme2', 'custom', 'customForm'])
+			this[key] = React.createRef();
 
 		this.state = {
 			deckType: '', showCustom: false
 		};
 	}
 
-	deckTypeClick(type) {
+	deckTypeClick = (type) => () => {
 		this.setState({
 			deckType: type
 		});
 	}
 
-	themeClick() {
+	themeClick = () => {
 		this.setState({
 			showCustom: this.custom.current.checked
 		});
 	}
 
-	createDeck() {
+	createDeck = () => {
 		let deckObject = null;
 		if (this.theme1.current.checked === true) {
 			deckObject = {
@@ -89,25 +77,26 @@ class CreateManager extends React.Component {
 	}
 
 	render() {
+		const { Manager } = this.props;
 		const isLightSelected = classNames('card', 'bg-light', 'bg-light-hover', 'mb-3', { 'bg-active-light': this.state.deckType === 'light' });
 		const isDarkSelected = classNames('card', 'bg-dark', 'bg-dark-hover', 'mb-3', 'text-white', { 'bg-active-dark': this.state.deckType === 'dark' });
 		const isCustomFormVisible = classNames({ 'hide-div': !this.state.showCustom });
 
 		return(
 			<div id="create-deck-tab" className="tab-content">
-	            <div className={"tab-pane fade" + (this.props.isActive ? " active show" : "")}>
+	            <div className={classNames("tab-pane", "fade", {"active show": Manager.currentSubNav === 'Create'})}>
 	             	<h4>Card Type</h4>
 	             	<p>Choose a type of card layout.</p>
 
 	             	<div className="row">
 	             		<div className="col-3">
-							<Card klasses={isLightSelected} clickHandler={this.deckTypeClick.bind(this, 'light')} cardDenom={'Ace'} cardTitle="Light card example" 
+							<Card klasses={isLightSelected} clickHandler={this.deckTypeClick('light')} cardDenom={'Ace'} cardTitle="Light card example" 
 								  cardSuitImg={heartsImg} cardImg={phelpsImg} cardImgAlt="phelps" cardName="Michael Phelps" 
 								  action1="Swimming" action2="Smoking kush" />
 						</div>
 
 						<div className="col-3">
-							<Card klasses={isDarkSelected} clickHandler={this.deckTypeClick.bind(this, 'dark')} cardDenom={'Ace'} cardTitle="Dark card example" 
+							<Card klasses={isDarkSelected} clickHandler={this.deckTypeClick('dark')} cardDenom={'Ace'} cardTitle="Dark card example" 
 								  cardSuitImg={spadesWhiteImg} cardImg={usainBoltImg} cardImgAlt="usain-bolt" cardName="Usain Bolt" 
 								  action1="Running" action2="Jumping real high" />
 						</div>
