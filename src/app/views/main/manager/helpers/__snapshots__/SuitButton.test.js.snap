@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Changes when active 1`] = `
-<a
+<button
   className="list-group-item list-group-item-action active"
 >
   <img
@@ -12,11 +12,11 @@ exports[`Changes when active 1`] = `
   <span>
     Hearts
   </span>
-</a>
+</button>
 `;
 
 exports[`Changes when active 2`] = `
-<a
+<button
   className="list-group-item list-group-item-action active"
 >
   <img
@@ -27,5 +27,5 @@ exports[`Changes when active 2`] = `
   <span>
     Hearts
   </span>
-</a>
+</button>
 `;

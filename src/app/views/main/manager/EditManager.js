@@ -311,26 +311,26 @@ class Manager extends React.Component {
 								  <SuitButton active={'spades' === this.currentSuit} suit={'spades'} suitClick={this.suitChange('spades')} blackImg={spadesImg} whiteImg={spadesWhiteImg}/>
 								</div>
 								<div className="list-group">
-								  <a className="list-group-item list-group-item-action" onClick={this.updateCards}>
+								  <button className="list-group-item list-group-item-action" onClick={this.updateCards}>
 								 	<i className="fa fa-save"></i>&nbsp;<span className="align-suit-text">Save Changes</span>
-								  </a>
-								  <a className="list-group-item list-group-item-action" onClick={this.exportCards}>
+								  </button>
+								  <button className="list-group-item list-group-item-action" onClick={this.exportCards}>
 								 	<i className="fa fa-download"></i>&nbsp;<span className="align-suit-text">Download Deck</span>
-								  </a>
-								  <a className="list-group-item list-group-item-action" onClick={this.uploadCards}>
+								  </button>
+								  <button className="list-group-item list-group-item-action" onClick={this.uploadCards}>
 								 	<i className="fa fa-upload"></i>&nbsp;<span className="align-suit-text">Upload Deck</span><input ref={this.cardsUpload} type="file" hidden/>
-								  </a>
+								  </button>
 								</div>
 							</div>
 
 							<div className="col-md-2 col-horiz-reduce-pad">
 					            <div className="list-group list-group-nopad">
 					              {denoms.map((denom, index) => (
-					              	<a key={index} onClick={this.denomChange(denom)}
+					              	<button key={index} onClick={this.denomChange(denom)}
 					              		className={classNames("list-group-item", "list-group-item-center", "list-group-item-action", {"active": this.currentDenom === denom})}
 					              	>
 									    {denom}
-									</a>
+									</button>
 					              ))}
 								</div>
 							</div>

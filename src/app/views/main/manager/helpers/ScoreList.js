@@ -24,10 +24,10 @@ class ScoreList extends React.PureComponent {
 				</div>
 				{difficultyObj.map((time, index) => {
 					return (
-						<a key={index} className="list-group-item list-group-item-center">
+						<button key={index} className="list-group-item list-group-item-center">
 						    <span className="scoreboard-col"><i className="fa fa-clock-o"></i>&nbsp;Seconds: {time.seconds}</span>
 						    <span className="scoreboard-col"><i className="fa fa-times"></i>&nbsp;Mistakes: {time.mistakes}</span>
-						</a>
+						</button>
 					)
 				})}
 			</div>

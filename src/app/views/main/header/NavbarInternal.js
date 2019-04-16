@@ -45,31 +45,28 @@ class NavbarInternal extends React.Component {
     const loginNav = this.props.User.isLoggedIn ? (
       <ul className="navbar-nav login-nav">
         <li className="nav-item">
-          <a className="nav-link active">{localStorage.getItem('username')}</a>
+          <button className="nav-link active">{localStorage.getItem('username')}</button>
         </li>
 
         <li className="nav-item">
-          <a className="nav-link" onClick={this.logout}>Logout</a>
+          <button className="nav-link" onClick={this.logout}>Logout</button>
         </li>
       </ul>
-    ) : (!this.props.User.isInitialLoading ? (
-      <React.Fragment>
+    ) : (!this.props.User.isInitialLoading ? (<>
         <ul className="navbar-nav login-nav">
           <li className="nav-item">
-            <a className="nav-link" data-toggle="modal" data-target="#login-modal">Login</a>
+            <button className="nav-link" data-toggle="modal" data-target="#login-modal">Login</button>
           </li>
 
           <li className="nav-item">
-            <a className="nav-link" data-toggle="modal" data-target="#register-modal">Register</a>
+            <button className="nav-link" data-toggle="modal" data-target="#register-modal">Register</button>
           </li>
         </ul>
 
         <LoginModal/>
         <RegisterModal/>
-      </React.Fragment>
-    ) : (
-      ''
-    ));
+      </>) : <></>
+    );
 
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-danger">

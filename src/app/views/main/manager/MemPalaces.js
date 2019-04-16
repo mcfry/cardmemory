@@ -26,7 +26,7 @@ class MemPalaces extends React.Component {
 
 		// Func Binds
 
-		// Refs\
+		// Refs
 		this.memPalaceForm = React.createRef();
 		this.groupsInput = React.createRef();
 	}
@@ -69,38 +69,38 @@ class MemPalaces extends React.Component {
 								<div className="col-md-2 col-horiz-reduce-pad">
 									<div className="list-group">
 										{Object.keys(this.props.Manager.memPalacesObj).map((key, index) => (
-											<a key={index} className={"list-group-item list-group-item-action" + (key === this.currentPalaceName ? " active" : "")} onClick={this.updateCurrentPalaceName.bind(this, key)}>
+											<button key={index} className={"list-group-item list-group-item-action" + (key === this.currentPalaceName ? " active" : "")} onClick={this.updateCurrentPalaceName.bind(this, key)}>
 												<span>{key[0].toUpperCase() + key.slice(1)}</span>
-											</a>
+											</button>
 										))}
 									</div>
 
 									<div className="list-group">
-									  <a className="list-group-item list-group-item-action" onClick={this.addMemoryPalace.bind(this)}>
+									  <button className="list-group-item list-group-item-action" onClick={this.addMemoryPalace.bind(this)}>
 									 	<i className="fa fa-plus"></i>&nbsp;<span className="align-suit-text">New Palace</span>
-									  </a>
-									  <a className="list-group-item list-group-item-action" onClick={this.deleteMemoryPalace.bind(this)}>
+									  </button>
+									  <button className="list-group-item list-group-item-action" onClick={this.deleteMemoryPalace.bind(this)}>
 									 	<i className="fa fa-trash"></i>&nbsp;<span className="align-suit-text">Delete Palace</span>
-									  </a>
+									  </button>
 									</div>
 								</div>
 
 								<div className="col-md-2 col-horiz-reduce-pad">
 						            <div className="list-group list-group-nopad">
 										{this.props.Manager.memPalacesObj[this.currentPalaceName].image_urls.map((path, index) => (
-											<a key={index} onClick={this.updateCurrentImageIndex.bind(this, index)} className={"list-group-item list-group-item-center list-group-item-action" + (this.currentImageIndex === index ? " active" : "")}>
+											<button key={index} onClick={this.updateCurrentImageIndex.bind(this, index)} className={"list-group-item list-group-item-center list-group-item-action" + (this.currentImageIndex === index ? " active" : "")}>
 												Image {index}
-											</a>
+											</button>
 										))}
 									</div>
 
 									<div className="list-group">
-									  <a className="list-group-item list-group-item-action" onClick={this.addImage.bind(this)}>
+									  <button className="list-group-item list-group-item-action" onClick={this.addImage.bind(this)}>
 									 	<i className="fa fa-plus"></i>&nbsp;<span className="align-suit-text">New Image</span>
-									  </a>
-									  <a className="list-group-item list-group-item-action" onClick={this.deleteImage.bind(this)}>
+									  </button>
+									  <button className="list-group-item list-group-item-action" onClick={this.deleteImage.bind(this)}>
 									 	<i className="fa fa-trash"></i>&nbsp;<span className="align-suit-text">Delete Image</span>
-									  </a>
+									  </button>
 									</div>
 								</div>
 

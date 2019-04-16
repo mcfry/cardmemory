@@ -12,3 +12,12 @@
 	/* prevents large alerts list from overlapping buttons */
 	z-index: 100;
 }
+
+button {
+	background: inherit;
+	color: inherit;
+	border: inherit; 
+	padding: inherit;
+	font: inherit;
+	cursor: pointer;
+}

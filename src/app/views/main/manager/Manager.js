@@ -22,15 +22,14 @@ import './Manager.css';
 	}
 }) @observer
 class Manager extends React.Component {
-	constructor(props) {
-		super(props);
+
+	subNavClick = () => (event, value) => {
+		this.props.Manager.setCurrentSubNav(event.target.textContent);
 	}
 
-	subNavClick = () => (event) => {
-		this.props.Manager.setCurrentSubNav(event.target.text);
+	checkActive = (current) => {
+		return this.props.Manager.currentSubNav === current;
 	}
-
-	checkActive = (current) => this.props.Manager.currentSubNav === current;
 
 	render() {
 		const { User, Manager } = this.props;
@@ -50,26 +49,26 @@ class Manager extends React.Component {
 		        		<div className={classNames({'d-none': User.isLoading || Manager.isLoading})}>
 		        			{!User.isLoggedIn ? (
 								<li className="nav-item pull-left">
-					              <a className={"nav-link active show"} 
-					              	 onClick={this.subNavClick()} data-toggle="tab">Info</a>
+					              <button className={"nav-link active show"} 
+					              	 onClick={this.subNavClick()} data-toggle="tab">Info</button>
 					            </li>
 					        ) : (<>
 			        			{Manager.deckObject === null ? (
 						            <li className="nav-item pull-left">
-						              <a className={navClasses.createClasses} onClick={this.subNavClick()} data-toggle="tab">Create</a>
+						              <button className={navClasses.createClasses} onClick={this.subNavClick()} data-toggle="tab">Create</button>
 						            </li>
 						        ) : (<>
 						            <li className="nav-item pull-left">
-						              <a className={navClasses.editClasses} onClick={this.subNavClick()} data-toggle="tab">Edit Deck</a>
+						              <button className={navClasses.editClasses} onClick={this.subNavClick()} data-toggle="tab">Edit Deck</button>
 						            </li>
 						            <li className="nav-item pull-left">
-						              <a className={navClasses.memPalClasses} onClick={this.subNavClick()} data-toggle="tab">Memory Palaces</a>
+						              <button className={navClasses.memPalClasses} onClick={this.subNavClick()} data-toggle="tab">Memory Palaces</button>
 						            </li>
 						            <li className="nav-item pull-left">
-						              <a className={navClasses.pracClasses} onClick={this.subNavClick()} data-toggle="tab">Practice</a>
+						              <button className={navClasses.pracClasses} onClick={this.subNavClick()} data-toggle="tab">Practice</button>
 						            </li>
 						            <li className="nav-item pull-left">
-						              <a className={navClasses.scoreClasses} onClick={this.subNavClick()} data-toggle="tab">Scoreboard</a>
+						              <button className={navClasses.scoreClasses} onClick={this.subNavClick()} data-toggle="tab">Scoreboard</button>
 						            </li>
 						        </>)}
 						    </>)}
