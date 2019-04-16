@@ -3,8 +3,8 @@ import React from "react";
 class ScoreList extends React.PureComponent {
 	render() {
 		const { bestTimes } = this.props;
-		const difficultyStr = '';
-		const difficultyObj = null;
+		let difficultyStr = '';
+		let difficultyObj = null;
 
 		if (bestTimes.easy !== undefined) {
 			difficultyStr = 'Easy';

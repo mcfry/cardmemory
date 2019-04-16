@@ -8,7 +8,7 @@ import LZString from 'lz-string';
 
 // Components
 import Card from '../../basic_components/Card';
-import SideSuit from './helpers/SideSuit';
+import SuitButton from './helpers/SuitButton';
 
 // Images
 import heartsImg from '../../../images/card-icons/hearts.png';
@@ -280,21 +280,17 @@ class Manager extends React.Component {
 
 	render() {
 		const { Manager } = this.props;
+		const { deck_info } = Manager.deckObject;
 		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, { 
-			'bg-light': Manager.deckObject.deck_info.deck_type === 'light',
-			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
-			'text-white': Manager.deckObject.deck_info.deck_type === 'dark'
+			'bg-light': deck_info.deck_type === 'light',
+			'bg-dark': deck_info.deck_type === 'dark',
+			'text-white': deck_info.deck_type === 'dark'
 		});
-
-		const heartsActive = classNames('list-group-item', 'list-group-item-action', { active: this.currentSuit === 'hearts'});
-		const diamondsActive = classNames('list-group-item', 'list-group-item-action', 'diamond-list-group', { active: this.currentSuit === 'diamonds'});
-		const clubsActive = classNames('list-group-item', 'list-group-item-action', { active: this.currentSuit === 'clubs'});
-		const spadesActive = classNames('list-group-item', 'list-group-item-action', { active: this.currentSuit === 'spades'});
 
 		const suitNumeric = this.suitsEnum[this.currentSuit];
 		const denomNumeric = this.denomsEnum[this.currentDenom];
 		const denoms = ['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
-		const cardObj = this.props.Manager.deckObject.cards[suitNumeric][denomNumeric];
+		const cardObj = Manager.deckObject.cards[suitNumeric][denomNumeric];
 
 		// Use the full object dereference in jsx, mobx tracks by access, not value..
 		// this.props.Manager.deckObject.cards[suitNumeric][denomNumeric]
@@ -309,10 +305,10 @@ class Manager extends React.Component {
 						<div className="row">
 							<div className="col-md-2 col-horiz-reduce-pad">
 					            <div className="list-group">
-								  <SideSuit klasses={heartsActive} suit={'hearts'} suitClick={this.suitChange('hearts')} blackImg={heartsImg} whiteImg={heartsWhiteImg}/>
-								  <SideSuit klasses={diamondsActive} suit={'diamonds'} suitClick={this.suitChange('diamonds')} blackImg={diamondsImg} whiteImg={diamondsWhiteImg}/>
-								  <SideSuit klasses={clubsActive} suit={'clubs'} suitClick={this.suitChange('clubs')} blackImg={clubsImg} whiteImg={clubsWhiteImg}/>
-								  <SideSuit klasses={spadesActive} suit={'spades'} suitClick={this.suitChange('spades')} blackImg={spadesImg} whiteImg={spadesWhiteImg}/>
+								  <SuitButton active={'hearts' === this.currentSuit} suit={'hearts'} suitClick={this.suitChange('hearts')} blackImg={heartsImg} whiteImg={heartsWhiteImg}/>
+								  <SuitButton active={'diamonds' === this.currentSuit} suit={'diamonds'} suitClick={this.suitChange('diamonds')} blackImg={diamondsImg} whiteImg={diamondsWhiteImg}/>
+								  <SuitButton active={'clubs' === this.currentSuit} suit={'clubs'} suitClick={this.suitChange('clubs')} blackImg={clubsImg} whiteImg={clubsWhiteImg}/>
+								  <SuitButton active={'spades' === this.currentSuit} suit={'spades'} suitClick={this.suitChange('spades')} blackImg={spadesImg} whiteImg={spadesWhiteImg}/>
 								</div>
 								<div className="list-group">
 								  <a className="list-group-item list-group-item-action" onClick={this.updateCards}>

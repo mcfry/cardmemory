@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Changes when difficulty, seconds, and mistakes change 1`] = `
+<div
+  className="list-group"
+  style={
+    Object {
+      "paddingBottom": "20px",
+    }
+  }
+>
+  <div>
+    <h1
+      style={
+        Object {
+          "marginLeft": "20px",
+        }
+      }
+    >
+      Easy
+    </h1>
+  </div>
+  <a
+    className="list-group-item list-group-item-center"
+  >
+    <span
+      className="scoreboard-col"
+    >
+      <i
+        className="fa fa-clock-o"
+      />
+       Seconds: 
+      100
+    </span>
+    <span
+      className="scoreboard-col"
+    >
+      <i
+        className="fa fa-times"
+      />
+       Mistakes: 
+      2
+    </span>
+  </a>
+</div>
+`;
+
+exports[`Changes when difficulty, seconds, and mistakes change 2`] = `
+<div
+  className="list-group"
+  style={
+    Object {
+      "paddingBottom": "20px",
+    }
+  }
+>
+  <div>
+    <h1
+      style={
+        Object {
+          "marginLeft": "20px",
+        }
+      }
+    >
+      Easy
+    </h1>
+  </div>
+  <a
+    className="list-group-item list-group-item-center"
+  >
+    <span
+      className="scoreboard-col"
+    >
+      <i
+        className="fa fa-clock-o"
+      />
+       Seconds: 
+      100
+    </span>
+    <span
+      className="scoreboard-col"
+    >
+      <i
+        className="fa fa-times"
+      />
+       Mistakes: 
+      2
+    </span>
+  </a>
+</div>
+`;

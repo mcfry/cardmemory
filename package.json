@@ -15,20 +15,26 @@
     "mobx": "^4.1.1",
     "mobx-react": "^5.0.0",
     "react": "^16.3.0",
-    "react-app-rewire-mobx": "^1.0.8",
-    "react-app-rewired": "^1.6.2",
     "react-dom": "^16.3.0",
     "react-error-overlay": "4.0.0",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "2.1.1"
+    "react-scripts": "2.1.8",
+    "react-test-renderer": "^16.8.6"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test --env=jsdom",
-    "eject": "react-app-rewired eject"
+    "start": "rescripts start",
+    "build": "rescripts build",
+    "test": "rescripts test",
+    "eject": "rescripts eject"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/plugin-proposal-decorators": "^7.4.0",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-react": "^7.0.0",
+    "@rescripts/cli": "^0.0.10",
+    "@rescripts/rescript-use-babel-config": "0.0.8",
+    "@rescripts/rescript-use-eslint-config": "0.0.9",
     "customize-cra": "^0.2.12"
   },
   "browserslist": [

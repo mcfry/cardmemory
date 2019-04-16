@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Changes when active 1`] = `
+<a
+  className="list-group-item list-group-item-action active"
+>
+  <img
+    alt="hearts"
+    className="card-nav-suit"
+  />
+   
+  <span>
+    Hearts
+  </span>
+</a>
+`;
+
+exports[`Changes when active 2`] = `
+<a
+  className="list-group-item list-group-item-action active"
+>
+  <img
+    alt="hearts"
+    className="card-nav-suit"
+  />
+   
+  <span>
+    Hearts
+  </span>
+</a>
+`;
