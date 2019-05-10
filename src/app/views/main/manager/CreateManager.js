@@ -48,7 +48,7 @@ class CreateManager extends React.Component {
 	}
 
 	createDeck = () => {
-		let deckObject = null;
+		let deckObject = {};
 		if (this.theme1.current.checked === true) {
 			deckObject = {
 				red: 'Women', black: 'Men', hearts: 'Good', clubs: 'Good', diamonds: 'Evil', spades: 'Evil'
@@ -70,10 +70,8 @@ class CreateManager extends React.Component {
 		}
 
 		const { Manager } = this.props;
-		if (deckObject !== null) {
-			deckObject.deck_type = this.state.deckType;
-			Manager.createDeck(deckObject);
-		}
+		deckObject.deck_type = this.state.deckType;
+		Manager.createDeck(deckObject);
 	}
 
 	render() {

@@ -71,31 +71,40 @@ class Manager {
 	// Public //
 
 	createDeck(deckInfo) {
-		this.setIsLoading(true);
-		axios({
-			url: `http://0.0.0.0:3001/api/v1/deck_infos`, 
-	        method: 'post',
-	        data: deckInfo,
-	        headers: {
-	          'Content-Type': 'application/json',
-	          'X-User-Email': localStorage.getItem('email'),
-	          'X-User-Token': localStorage.getItem('authentication_token')
-	        }
-	    }).then((response) => {
-			this.rootStore.AlertStore.pushItem('alerts', {
-				type: 'success',
-				message: "Deck successfully created!"
-			});
+		let fields = ['deck_type', 'red', 'black', 'hearts', 'spades', 'diamonds', 'clubs'];
+		if (fields.every(field => deckInfo[field])) {
+			this.setIsLoading(true);
+			axios({
+				url: `http://0.0.0.0:3001/api/v1/deck_infos`, 
+		        method: 'post',
+		        data: deckInfo,
+		        headers: {
+		          'Content-Type': 'application/json',
+		          'X-User-Email': localStorage.getItem('email'),
+		          'X-User-Token': localStorage.getItem('authentication_token')
+		        }
+		    }).then((response) => {
+				this.rootStore.AlertStore.pushItem('alerts', {
+					type: 'success',
+					message: "Deck successfully created!"
+				});
 
-	    	this.loadDeck();
-		}).catch((error) => {
+		    	this.loadDeck();
+			}).catch((error) => {
+				this.rootStore.AlertStore.pushItem('alerts', {
+					type: 'danger',
+					message: "Something went wrong. Please try again."
+				});
+
+				this.setIsLoading(false);
+			});
+		} else {
+			// TODO: More detailed alert for this
 			this.rootStore.AlertStore.pushItem('alerts', {
 				type: 'danger',
-				message: "Something went wrong. Please try again."
+				message: "You must select a card type and theme."
 			});
-
-			this.setIsLoading(false);
-		});
+		}
 	}
 
 	updateCards() {
@@ -123,6 +132,29 @@ class Manager {
 			});
 
 			this.setIsLoading(false);
+		});
+	}
+
+	updateMemoryPalace(name) {
+		axios({
+			url: `http://0.0.0.0:3001/api/v1/memory_palaces`, 
+	        method: 'patch',
+	        data: {name: name, groups_to_image_array: this.memPalacesObj[name].groups_to_image_array, image_urls: this.memPalacesObj[name].image_urls},
+	        headers: {
+	          'Content-Type': 'application/json',
+	          'X-User-Email': localStorage.getItem('email'),
+	          'X-User-Token': localStorage.getItem('authentication_token')
+	        }
+	    }).then((response) => {
+			this.rootStore.AlertStore.pushItem('alerts', {
+				type: 'success',
+				message: "Memory palace successfully saved!"
+			});
+		}).catch((error) => {
+			this.rootStore.AlertStore.pushItem('alerts', {
+				type: 'danger',
+				message: "Something went wrong. Please try again."
+			});
 		});
 	}
 
@@ -224,6 +256,7 @@ class Manager {
 			});
 		}
 
+		// BUGFIX: if loaded at same time as deck can have issue with object null (ui renders loaded but req in progress)
 		loadMemoryPalaces() {
 			this.setIsLoading(true);
 			axios({
@@ -235,6 +268,7 @@ class Manager {
 		          'X-User-Token': localStorage.getItem('authentication_token')
 		        }
 		    }).then((response) => {
+		    	//console.log(response.data);
 		    	let memPalacesObj = observable.object(response.data);
 		    	this.setMemPalaces(memPalacesObj);
 		    	this.setIsLoading(false);

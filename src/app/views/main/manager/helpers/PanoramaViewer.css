@@ -1,0 +1,11 @@
+.pan-cont {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	width: 700px;
+	height: 400px;
+}
+
+.override-btn {
+	transition: all 0s !important;
+}

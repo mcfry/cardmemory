@@ -4,9 +4,14 @@ import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
+import { toJS } from 'mobx';
+
+// Components
+import PanoramaViewer from './helpers/PanoramaViewer';
 
 // Css
 import './Manager.css';
+import 'animate.css/animate.min.css';
 
 @withRouter @inject(RootStore => {
 	return {
@@ -33,6 +38,10 @@ class MemPalaces extends React.Component {
 	addMemoryPalace = () => {
 	}
 
+	saveMemoryPalace = () => {
+		this.props.Manager.updateMemoryPalace(this.currentPalaceName);
+	}
+
 	deleteMemoryPalace = () => {
 	}
 
@@ -51,14 +60,48 @@ class MemPalaces extends React.Component {
 		this.currentImageIndex = index;
 	}
 
-	updateCurrentGroupInput = () => {
-		if (this.groupsInput.current) {
-			this.props.Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex] = this.groupsInput.current.value;
+	addGroupSpotToImage = (position) => {
+		this.props.Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex].push({x: position.x, y: position.y, z: position.z});
+	}
+
+	setGroupSpotImagePositions = (positions) => {
+		this.props.Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex] = positions;
+	}
+
+	getSpotsLeft = () => {
+		const { memPalacesObj } = this.props.Manager;
+
+		let valid = true; // flag to insure no zero-value entries
+		let total = 0;
+		if (memPalacesObj && this.currentPalaceName) {
+			let currentPalaceImgGroup = memPalacesObj[this.currentPalaceName].groups_to_image_array;
+			let i = 0; while (total !== 52 && i < currentPalaceImgGroup.length) {
+				if (currentPalaceImgGroup[i].length === 0) {
+					valid = false;
+				} else {
+					total += currentPalaceImgGroup[i].length;
+				}
+
+				i += 1;
+			}
 		}
+
+		return {
+			total: total,
+			valid: valid
+		};
 	}
 
 	render() {
 		const { Manager } = this.props;
+		const spotsLeftObj = this.getSpotsLeft();
+
+		// Each spot can hold 3 cards (person-action-object)
+		const cardsLeft = 52-(spotsLeftObj.total*3);
+		const spotsLeft = parseInt(cardsLeft/3) + (cardsLeft%3 === 0 ? 0 : 1);
+
+		// FIX DECK NOT LOADED IF PAGE REFRESHED
+		//console.log(Manager.memPalacesObj[this.currentPalaceName].image_urls[this.currentImageIndex]);
 
 		return(
 			<div id="memory-palace-tab" className="tab-content">
@@ -77,6 +120,9 @@ class MemPalaces extends React.Component {
 								</div>
 
 								<div className="list-group">
+								  <button className="list-group-item list-group-item-action" onClick={this.saveMemoryPalace}>
+								 	<i className="fa fa-save"></i>&nbsp;<span className="align-suit-text">Save Palace</span>
+								  </button>
 								  <button className="list-group-item list-group-item-action" onClick={this.addMemoryPalace}>
 								 	<i className="fa fa-plus"></i>&nbsp;<span className="align-suit-text">New Palace</span>
 								  </button>
@@ -111,18 +157,19 @@ class MemPalaces extends React.Component {
 
 					            	<div className="row">
 						            	<div className="col-md-8">
-							            	<div className="form-group">
-												<label htmlFor="groups-input">Number of spots you want to use in this image (info hover)</label>
-												<input type="text" className="form-control col-md-1" id="groups-input" 
-													value={Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex]} 
-													onChange={this.updateCurrentGroupInput} ref={this.groupsInput} />
-											</div>
+						            		<div style={{'display': 'block'}}>
+						            			Spots Left: {spotsLeft} (INFO HERE)<br/>
+						            			Hold Ctrl and click on a spot in the image to add a location
+						            		</div>
 										</div>
 						            </div>
 
 						            <div className="row">
-						            	<img className="img-fluid" alt="memory-palace" 
-						            		src={"http://0.0.0.0:3001/" + Manager.memPalacesObj[this.currentPalaceName].image_urls[this.currentImageIndex]}/>
+						            	<PanoramaViewer 
+						            		panoImgSrc={"http://0.0.0.0:3001" + Manager.memPalacesObj[this.currentPalaceName].image_urls[this.currentImageIndex]}
+						            		panoImgInfoSpots={Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex]}
+						            		addGroupSpotToImage={this.addGroupSpotToImage} setGroupSpotImagePositions={this.setGroupSpotImagePositions}
+						            	/>
 					            	</div>
 
 					            </div>
