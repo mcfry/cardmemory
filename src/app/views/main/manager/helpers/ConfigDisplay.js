@@ -55,12 +55,10 @@ class ConfigDisplay extends React.PureComponent {
 					</div>
 				</>}
 
-				<button type="button" onClick={startPractice} ref={goButton} className="btn btn-primary btn-danger practice-button-start">Go!</button>
+				<button type="button" onClick={startPractice} ref={goButton} className="btn btn-primary btn-danger practice-button-start w-100">Go!</button>
 			</div>
 		);
 	}
 }
 
 export default ConfigDisplay;
-
-							

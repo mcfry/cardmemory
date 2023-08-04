@@ -3,11 +3,11 @@ import Timer from '../../../basic_components/Timer';
 
 class TimerBar extends React.PureComponent {
 	render() {
-		let { memTimer, recallTimer, timerHeight, currentMode, 
+		let { memTimer, recallTimer, currentMode,
 			  currentMistakes, resetPractice, inProgressState, progressEnum } = this.props;
 
 		return (<>
-			<div className='timer-bar card no-border' style={{'height': timerHeight}}>
+			<div className='d-flex flex-column justify-content-center align-items-center timer-bar card no-border'>
 				<center>
 					{inProgressState > progressEnum['NOT_STARTED'] && inProgressState <= progressEnum['FINISHED'] ? (
 						currentMode === 'Flash Cards' ? 'Flash Timer' : 'Memory Timer'
@@ -21,7 +21,7 @@ class TimerBar extends React.PureComponent {
 						{currentMistakes === 0 ? (
 							<b>None</b>
 						) : (<>
-							{Array.apply(null, 
+							{Array.apply(null,
 								Array(currentMistakes)
 							).map((_, mistake_number) => {
 								return (
@@ -33,8 +33,8 @@ class TimerBar extends React.PureComponent {
 				</>}
 			</div>
 
-			{(inProgressState > progressEnum['NOT_STARTED'] 
-				&& inProgressState < progressEnum['FINISHED']) && 
+			{(inProgressState > progressEnum['NOT_STARTED']
+				&& inProgressState < progressEnum['FINISHED']) &&
 				<div className="pt-2">
 					<button type="button" onClick={resetPractice} className="btn btn-danger" style={{'width': '134px'}}>
 						Reset

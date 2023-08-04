@@ -58,8 +58,6 @@ class PanoramaViewer extends React.Component {
 			this.infospots.push(infospot);
 			this.panorama.add(infospot);
 			this.panorama.toggleInfospotVisibility(true);
-
-			console.log(infospot);
 		}
 	}
 
@@ -115,7 +113,7 @@ class PanoramaViewer extends React.Component {
 		// TODO: Clean this up for modularity / remove or relocate
 		// Handle first update
 		if (!this.viewer) {
-			this.createViewer({ 
+			this.createViewer({
 				container: this.panCont.current,
 				autoHideInfospot: false,
 				controlBar: true

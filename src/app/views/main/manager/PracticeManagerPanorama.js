@@ -83,10 +83,10 @@ class PracticeManagerPanorama extends React.Component {
 			this.suitsEnum[this.suitsEnum[i+1] = suit] = i+1;
 		}
 
-		// enum (0-4)
-		const inProgressStates = ['NOT_STARTED', 'MEMORIZE', 'INTERMISSION', 'RECALL', 'FINISHED'];
+		// enum (0-5)
+		const inProgressStates = ['NOT_STARTED', 'MEMORIZE', 'INTERMISSION', 'RECALL', 'FINISHED', 'FINISHED_NO_SUBMIT'];
 		this.progressEnum = {};
-		for (let i = 0; i <= 4; i++) {
+		for (let i = 0; i <= 5; i++) {
 			const inProgressState = inProgressStates[i];
 			this.progressEnum[this.progressEnum[i] = inProgressState] = i;
 		}
@@ -273,7 +273,7 @@ class PracticeManagerPanorama extends React.Component {
 	}
 
 	nextCardStandard = () => {
-		if (this.inProgressState === 1) {
+		if (this.progress('MEMORIZE')) {
 
 			this.nextButtonDisabled = true;
 			this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
@@ -282,7 +282,8 @@ class PracticeManagerPanorama extends React.Component {
 			}, 1000);
 			this.currentMemStep = this.currentStep;
 
-		} else if (this.inProgressState === 3) {
+		// Use levenshtein to allow 2 missed chars
+		} else if (this.progress('RECALL')) {
 			if (this.currentMode === 'Flash Cards') {
 
 				let self = this;
@@ -300,26 +301,27 @@ class PracticeManagerPanorama extends React.Component {
 
 			} else if (this.currentMethod === 'Card Name') {
 
+				let self = this;
 				this.attemptIf(this.cardName.current && !String.isEmpty(this.cardName.current.value), function() {
-					this.attemptIf(levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2, function() {
+					self.attemptIf(levenshtein(self.practiceDeck[self.currentStep-1].name, self.cardName.current.value) <= 2, function() {
 						// Hide card back
-						this.cardBackAnimState = 'flipOutY';
-						this.cardAnimState = 'hide';
-						this.nextButtonDisabled = true;
+						self.cardBackAnimState = 'flipOutY';
+						self.cardAnimState = 'hide';
+						self.nextButtonDisabled = true;
 
 						setTimeout(() => {
 							// Reveal correct guess
-							this.cardBackAnimState = 'hide';
-							this.cardAnimState = 'flipInY';
+							self.cardBackAnimState = 'hide';
+							self.cardAnimState = 'flipInY';
 
 							setTimeout(() => {
 								// Get next card
-								this.cardName.current.value = "";
-								this.cardName.current.focus();
-								this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight', true);
+								self.cardName.current.value = "";
+								self.cardName.current.focus();
+								self.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight', true);
 
 								setTimeout(() => {
-									this.nextButtonDisabled = false;
+									self.nextButtonDisabled = false;
 								}, 500);
 							}, 1100);
 						}, 500);
@@ -328,30 +330,31 @@ class PracticeManagerPanorama extends React.Component {
 
 			} else {
 
+				let self = this;
 				this.attemptIf(this.selectSuit.current && parseInt(this.selectSuit.current.value, 10) !== 0
 						&& this.selectDenom.current && parseInt(this.selectDenom.current.value, 10) !== 0, function() {
 
-					this.attemptIf(this.practiceDeck[this.currentStep-1].card_number === this.denomsEnum[this.selectDenom.current.value]
-							&& this.practiceDeck[this.currentStep-1].suit === this.selectSuit.current.value.toLowerCase(), function() {
+					self.attemptIf(self.practiceDeck[self.currentStep-1].card_number === self.denomsEnum[self.selectDenom.current.value]
+							&& self.practiceDeck[self.currentStep-1].suit === self.selectSuit.current.value.toLowerCase(), function() {
 
 						// Hide card back
-						this.cardBackAnimState = 'flipOutY';
-						this.cardAnimState = 'hide';
-						this.nextButtonDisabled = true;
+						self.cardBackAnimState = 'flipOutY';
+						self.cardAnimState = 'hide';
+						self.nextButtonDisabled = true;
 
 						setTimeout(() => {
 							// Reveal correct guess
-							this.cardBackAnimState = 'hide';
-							this.cardAnimState = 'flipInY';
+							self.cardBackAnimState = 'hide';
+							self.cardAnimState = 'flipInY';
 
 							setTimeout(() => {
 								// Get next card
-								this.selectSuit.current.value = "0";
-								this.selectDenom.current.value = "0";
-								this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight', true);
+								self.selectSuit.current.value = "0";
+								self.selectDenom.current.value = "0";
+								self.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight', true);
 
 								setTimeout(() => {
-									this.nextButtonDisabled = false;
+									self.nextButtonDisabled = false;
 								}, 500);
 							}, 1100);
 						}, 500);
@@ -366,23 +369,27 @@ class PracticeManagerPanorama extends React.Component {
 	nextCardFinal = () => {
 		const { Manager } = this.props;
 
+		console.log(this.inProgressState)
+
 		// Mark end as one step after final count
-		if (this.inProgressState === 1) {
+		if (this.progress('MEMORIZE')) {
 			this.currentMemStep = this.activeCardNumber + 1;
 			this.memTimer.current.stopTimer();
+
+			console.log(this.currentMemStep)
 
 			// Start recall transition
 			this.inProgressState = 2;
 		} else if (this.currentMode === 'Flash Cards') {
 			if (this.cardName.current && !String.isEmpty(this.cardName.current.value)) {
 				if (levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2) {
-					this.inProgressState = 4;
+					this.inProgressState = 5;
 					this.memTimer.current.stopTimer();
 				} else {
 					this.processIncorrect();
 				}
 			}
-		} else if (this.inProgressState === 3) {
+		} else if (this.progress('RECALL')) {
 			if (this.cardName.current && !String.isEmpty(this.cardName.current.value)) {
 				if (levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2) {
 					this.recallTimer.current.stopTimer();
@@ -423,8 +430,10 @@ class PracticeManagerPanorama extends React.Component {
 		if (this.nextButtonDisabled) return;
 		const { Manager } = this.props;
 
+		console.log(this.currentStep, this.activeCardNumber)
+
 		if (this.currentStep < this.activeCardNumber) {
-			if (this.memPalaceName && this.memPalaceName !== null) {
+			if (this.isUsingMemPalace()) {
 				this.setCurrentCardAndAddToPano();
 			} else {
 				this.nextCardStandard();
@@ -486,6 +495,8 @@ class PracticeManagerPanorama extends React.Component {
 		const cardNumber = this.selectNumber.current ? this.selectNumber.current.value : '0';
 		const cardMethod = this.selectMethod.current ? this.selectMethod.current.value : '0';
 		const memPalaceName = this.selectAssist.current ? this.selectAssist.current.value : '0';
+
+		console.log(this.validPalaces[memPalaceName])
 
 		if (cardMode === 'Memorize the Deck' && (cardNumber === '0' || cardMethod === '0')) {
 			Alert.pushItem('alerts', {
@@ -579,7 +590,7 @@ class PracticeManagerPanorama extends React.Component {
 
 	startRecall = () => {
 		// If valid
-		if (this.inProgressState === 2 && this.currentMemStep-1 === parseInt(this.activeCardNumber, 10)) {
+		if (this.progress('INTERMISSION') && this.currentMemStep-1 === parseInt(this.activeCardNumber, 10)) {
 			if (this.recallTimer.current)
 				this.recallTimer.current.startTimer();
 
@@ -592,6 +603,20 @@ class PracticeManagerPanorama extends React.Component {
 	}
 
 	updateMode = () => this.currentMode = this.selectMode.current.value;
+
+	progress = (state, equality='eq') => {
+		if (equality === 'eq' && this.inProgressState === this.progressEnum[state]) {
+			return true
+		} else if (equality === 'neq' && this.inProgressState !== this.progressEnum[state]) {
+			return true
+		} else if (equality === 'gte' && this.inProgressState >= this.progressEnum[state]) {
+			return true
+		} else if (equality === 'lte' && this.inProgressState <= this.progressEnum[state]) {
+			return true
+		} else {
+			return false
+		}
+	}
 
 	difficulty(index) {
 		let diff = {
@@ -629,7 +654,8 @@ class PracticeManagerPanorama extends React.Component {
 			1: this.nextCardButton,
 			2: this.startRecallButton,
 			3: this.nextCardButton,
-			4: this.nextRoundButton
+			4: this.nextRoundButton,
+			5: this.nextRoundButton
 		};
 
 		if (e.key === 'Enter' && stateToButton[this.inProgressState].current)
@@ -666,6 +692,9 @@ class PracticeManagerPanorama extends React.Component {
 		const { Manager } = this.props;
 		const isUsingMemPalace = this.isUsingMemPalace();
 
+		const { progress, notProgress } = this;
+		// ['NOT_STARTED', 'MEMORIZE', 'INTERMISSION', 'RECALL', 'FINISHED', 'FINISHED_NO_SUBMIT'];
+
 		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, {
 			'bg-white': Manager.deckObject.deck_info.deck_type === 'light',
 			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
@@ -676,19 +705,18 @@ class PracticeManagerPanorama extends React.Component {
 		const deckTypeBackClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardBackAnimState, {
 			'bg-white': Manager.deckObject.deck_info.deck_type === 'light',
 			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
-			'd-none': this.inProgressState !== 3 || this.cardBackAnimState === 'hide'
+			'd-none': progress('RECALL', 'neq') || this.cardBackAnimState === 'hide'
 		});
 
 		const cardBackImg = Manager.deckObject.deck_info.deck_type === 'light' ? redBackImg : whiteBackImg;
 
-		const configDisplay = classNames('mx-auto', { 'd-none': this.inProgressState !== 0 });
-		const practiceDisplay = classNames('practice-display', 'mx-auto', { 'd-none': this.inProgressState === 0 });
+		const configDisplay = classNames('mx-auto', { 'd-none': progress('NOT_STARTED', 'neq') });
+		const practiceDisplay = classNames('practice-display', 'mx-auto', { 'd-none': progress('NOT_STARTED') });
 
-		const timerHeight = this.inProgressState >= 2 && this.currentMode !== 'Flash Cards' ? '170px' : '80px';
 		let practiceCpMarginBottom = '-50px';
-		if (this.inProgressState === 1 || (this.currentMode === 'Flash Cards' && this.inProgressState >= 2)) {
+		if (progress('MEMORIZE') || (this.currentMode === 'Flash Cards' && progress('INTERMISSION', 'gte'))) {
 			practiceCpMarginBottom = '-140px';
-		} else if (this.inProgressState >= 2) {
+		} else if (progress('INTERMISSION', 'gte')) {
 			practiceCpMarginBottom = '-230px';
 		}
 
@@ -717,7 +745,7 @@ class PracticeManagerPanorama extends React.Component {
 					<div className="container">
 						<div className="d-flex flex-column practice-cp" style={{'marginBottom': practiceCpMarginBottom}}>
 
-							<TimerBar memTimer={this.memTimer} recallTimer={this.recallTimer} timerHeight={timerHeight}
+							<TimerBar memTimer={this.memTimer} recallTimer={this.recallTimer}
 								currentMode={this.currentMode} currentMistakes={this.currentMistakes} resetPractice={this.resetPractice}
 								inProgressState={this.inProgressState} progressEnum={this.progressEnum}
 							/>
@@ -731,14 +759,15 @@ class PracticeManagerPanorama extends React.Component {
 								selectNumber={this.selectNumber} selectMethod={this.selectMethod} selectAssist={this.selectAssist}
 								validPalaces={this.validPalaces} startPractice={this.startPractice} goButton={this.goButton} />
 
-							{this.inProgressState === this.progressEnum['FINISHED'] ? (<>
+							{progress('FINISHED') || progress('FINISHED_NO_SUBMIT') ? (<>
 								<div className="container text-center">
 									<div className="recall animated jackInTheBox">
 										<h1 style={{'fontColor': 'green'}}>Success</h1>
 									</div>
 
 									<button type="button" onClick={this.resetPractice} ref={this.nextRoundButton} className="btn btn-danger recall">
-										Next Round
+										{progress('FINISHED') && <>Finish and Submit</>}
+										{progress('FINISHED_NO_SUBMIT') && <>Finish</>}
 									</button>
 								</div>
 							</>) : (
@@ -746,8 +775,8 @@ class PracticeManagerPanorama extends React.Component {
 									<div className="container">
 										<div className="card-memory-main">
 
-											{(this.inProgressState === this.progressEnum['MEMORIZE'] || this.inProgressState === this.progressEnum['RECALL']) && <>
-												{this.memPalaceName !== null &&
+											{(progress('MEMORIZE') || progress('RECALL')) && <>
+												{isUsingMemPalace &&
 													<PanoramaViewer panoImgSrc={this.currentMemPalaceImage} panoImgInfoSpotsAdvanced={this.currentInfoSpots} ref={this.panView} />
 												}
 
@@ -763,15 +792,15 @@ class PracticeManagerPanorama extends React.Component {
 
 											</>}
 
-											{this.inProgressState === this.progressEnum['INTERMISSION'] && <div className="container text-center">
+											{progress('INTERMISSION') && <div className="container text-center">
 												<button type="button" onClick={this.startRecall} ref={this.startRecallButton} className="btn btn-danger recall">
 													Start Recall
 												</button>
 											</div>}
 
-											{this.inProgressState === this.progressEnum['RECALL'] && <>
+											{progress('RECALL') && <>
 												{this.currentMode !== 'Flash Cards' && <>
-													{this.memPalaceName !== null ? (
+													{isUsingMemPalace ? (
 														<PanoramaViewer panoImgSrc={this.currentMemPalaceImage} ref={this.panView} />
 													) : (
 														<Card klasses={deckTypeBackClasses} cardImgAlt="card-background"
@@ -797,7 +826,7 @@ class PracticeManagerPanorama extends React.Component {
 												</>)}
 											</>}
 
-											{(this.inProgressState === this.progressEnum['MEMORIZE'] || this.inProgressState === this.progressEnum['RECALL']) &&
+											{(progress('MEMORIZE') || progress('RECALL')) &&
 												<div className={this.currentMode === 'Flash Cards' ? "next-flash-card-go" : "next-card-go"}>
 													<span><b>
 														{this.currentStep > this.activeCardNumber ? this.activeCardNumber : this.currentStep}</b> of <b>{this.activeCardNumber}
