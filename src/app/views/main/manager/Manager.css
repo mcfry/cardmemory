@@ -1,22 +1,24 @@
 .nav-tabs {
-	border-bottom: 1px solid #ddd;
+	border-bottom: 2px solid #ddd;
 }
 
 .nav-tabs .container .nav-link:active,
 .nav-tabs .container .nav-link:hover {
 	border: none;
-	-webkit-box-shadow: inset 0 -2px 0 #2196F3;
-	box-shadow: inset 0 -2px 0 black;
+	-webkit-box-shadow: inset 0 -1px 0 #2196F3;
+	box-shadow: inset 0 -1px 0 black;
 	color: black;
+	border-bottom: 1px solid black !important;
 }
 
-.nav-tabs .container .nav-link.active, 
+.nav-tabs .container .nav-link.active,
 .nav-tabs .container .nav-link.active:focus,
 .nav-tabs .container .nav-link.active:active {
 	border: none;
-	-webkit-box-shadow: inset 0 -2px 0 #2196F3;
-	box-shadow: inset 0 -2px 0 red;
+	-webkit-box-shadow: inset 0 -1px 0 #2196F3;
+	box-shadow: inset 0 -1px 0 red;
 	color: red;
+	border-bottom: 1px solid red !important;
 }
 
 .hide-div {

@@ -1,5 +1,6 @@
-/*// Libraries
+// Libraries
 import React from "react";
+import ReactDOM from "react-dom";
 import { observable } from "mobx";
 import { observer, inject } from "mobx-react";
 import { withRouter } from "react-router-dom";
@@ -8,7 +9,10 @@ import levenshtein from "levenshtein-edit-distance";
 
 // Components
 import Card from '../../basic_components/Card';
-import Timer from '../../basic_components/Timer';
+import Select from '../../basic_components/Select';
+import TimerBar from './helpers/TimerBar';
+import ConfigDisplay from './helpers/ConfigDisplay';
+import PanoramaViewer from './helpers/PanoramaViewer';
 
 // Images
 import heartsImg from '../../../images/card-icons/hearts.png';
@@ -33,7 +37,7 @@ import 'animate.css/animate.min.css';
 		Alert: RootStore.AlertStore
 	}
 }) @observer
-class PracticeManager extends React.Component {
+class PracticeManagerPanorama extends React.Component {
 
 	@observable cardAnimState = 'bounceInRight';
 	@observable cardBackAnimState = 'hide';
@@ -41,6 +45,7 @@ class PracticeManager extends React.Component {
 	@observable nextButtonDisabled = false;
 	@observable inProgressState = 0;
 	@observable cardsFinished = {};
+	@observable validPalaces = {};
 	@observable practiceDeck = null;
 	@observable currentStep = 0; // actually starts at 1
 	@observable currentMemStep = 1;
@@ -50,14 +55,16 @@ class PracticeManager extends React.Component {
 	@observable currentMethod = 0;
 	@observable activeCardNumber = 0;
 	@observable currentAssist = 0;
+	@observable currentMemPalaceImage = null;
+	@observable currentInfoSpots = [];
 
 	constructor(props) {
 		super(props);
 
 		// refs
-		for (let key of ['selectMode', 'selectNumber', 'selectMethod', 'selectAssist', 'selectDenom', 
-						 'selectSuit', 'memTimer', 'recallTimer', 'cardName', 'goButton', 'nextRoundButton', 
-						 'startRecallButton', 'nextCardButton'])
+		for (let key of ['selectMode', 'selectNumber', 'selectMethod', 'selectAssist', 'selectDenom',
+						 'selectSuit', 'memTimer', 'recallTimer', 'cardName', 'goButton', 'nextRoundButton',
+						 'startRecallButton', 'nextCardButton', 'panView'])
 			this[key] = React.createRef();
 
 		// enum (14-2)
@@ -75,6 +82,83 @@ class PracticeManager extends React.Component {
 			const suit = suits[3-i];
 			this.suitsEnum[this.suitsEnum[i+1] = suit] = i+1;
 		}
+
+		// enum (0-4)
+		const inProgressStates = ['NOT_STARTED', 'MEMORIZE', 'INTERMISSION', 'RECALL', 'FINISHED'];
+		this.progressEnum = {};
+		for (let i = 0; i <= 4; i++) {
+			const inProgressState = inProgressStates[i];
+			this.progressEnum[this.progressEnum[i] = inProgressState] = i;
+		}
+
+		this.memPalaceName = null;
+	}
+
+	setCurrentCardAndAddToPano() {
+		const { memPalacesObj } = this.props.Manager;
+
+		let [imageIndex, imageInfoSpot] = this.getCurrentMemPalaceImageAndNextInfoSpot();
+
+		console.log(imageIndex);
+
+		this.currentStep += 1;
+		this.currentCard = this.practiceDeck[this.currentStep-1];
+
+		if (imageIndex !== -1 && this.currentMemPalaceImage !== "http://0.0.0.0:3001" + memPalacesObj[this.memPalaceName].image_urls[imageIndex]) {
+			this.currentInfoSpots = [];
+			this.currentMemPalaceImage = "http://0.0.0.0:3001" + memPalacesObj[this.memPalaceName].image_urls[imageIndex];
+		}
+
+		let element = this.createInfoSpot();
+		if (this.panView.current && this.currentMemPalaceImage) {
+			//this.panView.current.loadImage("http://0.0.0.0:3001" + this.currentMemPalaceImage);
+			//this.panView.current.populateInfoSpot(imageInfoSpot, element, 'c300');
+			this.currentInfoSpots.push([imageInfoSpot, element, 'c300']);
+		}
+	}
+
+	getCurrentMemPalaceImageAndNextInfoSpot() {
+		const { memPalacesObj } = this.props.Manager;
+		let image_array = memPalacesObj[this.memPalaceName].groups_to_image_array;
+
+		let imageInfoSpot = null;
+		let imageIndex = -1;
+		let i = -1;
+		while (i < this.currentStep) {
+			for (let infoSpotsArray of image_array) {
+
+				if (infoSpotsArray.length > 0)
+					imageIndex += 1;
+
+				for (let infoSpot of infoSpotsArray) {
+					if (i+1 >= this.currentStep) {
+						imageInfoSpot = infoSpot;
+						return [imageIndex, imageInfoSpot];
+					} else {
+						i += 1;
+					}
+				}
+			}
+		}
+	}
+
+	createInfoSpot() {
+		const { Manager } = this.props;
+
+		let domElement = document.createElement('div');
+		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'card-mini', {
+			'bg-light': Manager.deckObject.deck_info.deck_type === 'light',
+			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
+			'text-white': Manager.deckObject.deck_info.deck_type === 'dark'
+		});
+
+		let cardElement = <Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom}
+			  cardSuitImg={this.getCardSuitImage()} cardImgAlt="" isBasic={true}
+		/>
+
+		ReactDOM.render(cardElement, domElement);
+
+		return domElement;
 	}
 
 	setCurrentCardAndAnimate(beforeAnim = '', afterAnim = '', newIsCardBack = false, custom_delay, callback) {
@@ -108,7 +192,7 @@ class PracticeManager extends React.Component {
 				case 'spades': return spadesImg;
 				default: return '';
 			}
-		} else {			
+		} else {
 			switch (suit) {
 				case 'hearts': return heartsWhiteImg;
 				case 'diamonds': return diamondsWhiteImg;
@@ -116,6 +200,45 @@ class PracticeManager extends React.Component {
 				case 'spades': return spadesWhiteImg;
 				default: return '';
 			}
+		}
+	}
+
+	// Associate palaces with all valid difficulties
+	populateValidPalaces() {
+		this.validPalaces = {};
+		for (let palName in this.props.Manager.memPalacesObj) {
+			let spots = this.getSpotsFinished(palName);
+
+			let availableSpots = spots * 3;
+			this.validPalaces[palName] = [];
+			for (let diff of [13, 26, 39, 52]) {
+				if (availableSpots >= diff) {
+					this.validPalaces[palName].push(diff);
+				}
+			}
+		}
+	}
+
+	getSpotsFinished(palaceName) {
+		const memPal = this.props.Manager.memPalacesObj[palaceName];
+
+		if (memPal) {
+			let valid = true;
+			let total = 0;
+			let currentPalaceImgGroup = memPal.groups_to_image_array;
+			let i = 0; while (i < currentPalaceImgGroup.length) {
+				if (currentPalaceImgGroup[i].length === 0) {
+					valid = false;
+				} else {
+					total += currentPalaceImgGroup[i].length;
+				}
+
+				i += 1;
+			}
+
+			return total; // 3 cards per spot
+		} else {
+			return 0;
 		}
 	}
 
@@ -127,7 +250,7 @@ class PracticeManager extends React.Component {
 			for (let denom in cards[suit]) {
 				const denom_obj = cards[suit][denom];
 
-				if ([denom_obj.name, denom_obj.image_url, denom_obj.action1, denom_obj.action2].every(value => 
+				if ([denom_obj.name, denom_obj.image_url, denom_obj.action1, denom_obj.action2].every(value =>
 					!String.isEmpty(value)
 				)) {
 					denom_obj.suit = this.suitsEnum[suit];
@@ -142,7 +265,7 @@ class PracticeManager extends React.Component {
 
 	attemptIf = (condition, toAttempt) => {
 		if (condition && toAttempt && typeof toAttempt === 'function') {
-			let succeeded = guess();
+			let succeeded = toAttempt();
 			if (succeeded === false) this.processIncorrect();
 		} else {
 			this.processIncorrect();
@@ -158,26 +281,27 @@ class PracticeManager extends React.Component {
 				this.nextButtonDisabled = false;
 			}, 1000);
 			this.currentMemStep = this.currentStep;
-			
+
 		} else if (this.inProgressState === 3) {
 			if (this.currentMode === 'Flash Cards') {
 
-				attemptIf(this.cardName.current && !String.isEmpty(this.cardName.current.value), function() {
-					attemptIf(levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2, function() {
-						this.nextButtonDisabled = true;
-						this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
+				let self = this;
+				this.attemptIf(this.cardName.current && !String.isEmpty(this.cardName.current.value), function() {
+					self.attemptIf(levenshtein(self.practiceDeck[self.currentStep-1].name, self.cardName.current.value) <= 2, function() {
+						self.nextButtonDisabled = true;
+						self.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
 						setTimeout(() => {
-							this.cardName.current.value = "";
-							this.cardName.current.focus();
-							this.nextButtonDisabled = false;
+							self.cardName.current.value = "";
+							self.cardName.current.focus();
+							self.nextButtonDisabled = false;
 						}, 1000);
 					});
 				});
 
 			} else if (this.currentMethod === 'Card Name') {
 
-				attemptIf(this.cardName.current && !String.isEmpty(this.cardName.current.value), function() {
-					attemptIf(levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2, function() {
+				this.attemptIf(this.cardName.current && !String.isEmpty(this.cardName.current.value), function() {
+					this.attemptIf(levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2, function() {
 						// Hide card back
 						this.cardBackAnimState = 'flipOutY';
 						this.cardAnimState = 'hide';
@@ -204,10 +328,10 @@ class PracticeManager extends React.Component {
 
 			} else {
 
-				attemptIf(this.selectSuit.current && parseInt(this.selectSuit.current.value, 10) !== 0 
+				this.attemptIf(this.selectSuit.current && parseInt(this.selectSuit.current.value, 10) !== 0
 						&& this.selectDenom.current && parseInt(this.selectDenom.current.value, 10) !== 0, function() {
 
-					attemptIf(this.practiceDeck[this.currentStep-1].card_number === this.denomsEnum[this.selectDenom.current.value] 
+					this.attemptIf(this.practiceDeck[this.currentStep-1].card_number === this.denomsEnum[this.selectDenom.current.value]
 							&& this.practiceDeck[this.currentStep-1].suit === this.selectSuit.current.value.toLowerCase(), function() {
 
 						// Hide card back
@@ -231,6 +355,7 @@ class PracticeManager extends React.Component {
 								}, 500);
 							}, 1100);
 						}, 500);
+
 					});
 				});
 
@@ -239,6 +364,8 @@ class PracticeManager extends React.Component {
 	}
 
 	nextCardFinal = () => {
+		const { Manager } = this.props;
+
 		// Mark end as one step after final count
 		if (this.inProgressState === 1) {
 			this.currentMemStep = this.activeCardNumber + 1;
@@ -260,7 +387,7 @@ class PracticeManager extends React.Component {
 				if (levenshtein(this.practiceDeck[this.currentStep-1].name, this.cardName.current.value) <= 2) {
 					this.recallTimer.current.stopTimer();
 					Manager.sendTime({
-						difficulty: this.difficulty(parseInt(this.selectNumber.current.value, 10)),
+						difficulty: this.databaseDifficulty(parseInt(this.selectNumber.current.value, 10)),
 						seconds: this.memTimer.current.state.counter + this.recallTimer.current.state.counter,
 						mistakes: this.currentMistakes
 					});
@@ -269,15 +396,15 @@ class PracticeManager extends React.Component {
 				} else {
 					this.processIncorrect();
 				}
-			} else if (this.selectSuit.current && parseInt(this.selectSuit.current.value, 10) !== 0 && 
+			} else if (this.selectSuit.current && parseInt(this.selectSuit.current.value, 10) !== 0 &&
 				this.selectDenom.current && parseInt(this.selectDenom.current.value, 10) !== 0) {
-				
-				if (this.practiceDeck[this.currentStep-1].card_number === this.denomsEnum[this.selectDenom.current.value] && 
+
+				if (this.practiceDeck[this.currentStep-1].card_number === this.denomsEnum[this.selectDenom.current.value] &&
 					this.practiceDeck[this.currentStep-1].suit === this.selectSuit.current.value.toLowerCase()) {
 
 					this.recallTimer.current.stopTimer();
 					Manager.sendTime({
-						difficulty: this.difficulty(parseInt(this.selectNumber.current.value, 10)),
+						difficulty: this.databaseDifficulty(parseInt(this.selectNumber.current.value, 10)),
 						seconds: this.memTimer.current.state.counter + this.recallTimer.current.state.counter,
 						mistakes: this.currentMistakes
 					});
@@ -297,7 +424,11 @@ class PracticeManager extends React.Component {
 		const { Manager } = this.props;
 
 		if (this.currentStep < this.activeCardNumber) {
-			this.nextCardStandard();
+			if (this.memPalaceName && this.memPalaceName !== null) {
+				this.setCurrentCardAndAddToPano();
+			} else {
+				this.nextCardStandard();
+			}
 		} else {
 			this.nextCardFinal();
 		}
@@ -305,7 +436,7 @@ class PracticeManager extends React.Component {
 
 	skipCard = () => {
 		if (this.nextButtonDisabled) return;
-		
+
 		if (this.currentStep < this.activeCardNumber) {
 			this.nextButtonDisabled = true;
 			this.setCurrentCardAndAnimate('bounceOutLeft', 'bounceInRight');
@@ -348,12 +479,13 @@ class PracticeManager extends React.Component {
 	}
 
 	startPractice = () => {
-		const { Alert } = this.props;
+		const { Alert, Manager } = this.props;
 
 		// Default value === string 0, returned by default from html attr or if not rendered
 		const cardMode = this.selectMode.current ? this.selectMode.current.value : '0';
 		const cardNumber = this.selectNumber.current ? this.selectNumber.current.value : '0';
 		const cardMethod = this.selectMethod.current ? this.selectMethod.current.value : '0';
+		const memPalaceName = this.selectAssist.current ? this.selectAssist.current.value : '0';
 
 		if (cardMode === 'Memorize the Deck' && (cardNumber === '0' || cardMethod === '0')) {
 			Alert.pushItem('alerts', {
@@ -370,6 +502,16 @@ class PracticeManager extends React.Component {
 				type: 'error',
 				message: "You must first select a mode to practice!"
 			});
+		} else if (cardMode === 'Memorize the Deck' && memPalaceName === '0') {
+			Alert.pushItem('alerts', {
+				type: 'error',
+				message: "You must first select an option for a memory palace!"
+			});
+		} else if (cardMode === 'Memorize the Deck' && memPalaceName !== 'None' && !this.validPalaces[memPalaceName].includes(parseInt(cardNumber, 10)) ) {
+			Alert.pushItem('alerts', {
+				type: 'error',
+				message: `That memory palace does not have enough spots created for the ${cardMode} difficulty!`
+			});
 		} else {
 			if (this.memTimer.current) {
 				this.memTimer.current.resetTimer();
@@ -382,9 +524,9 @@ class PracticeManager extends React.Component {
 
 			if (this.currentMode === 'Memorize the Deck') {
 				this.inProgressState = 1;
-				this.activeCardNumber = parseInt(this.selectNumber.current.value, 10);
-				this.currentMethod = this.selectMethod.current.value;
-				this.currentAssist = this.selectAssist.current.value;
+				this.activeCardNumber = parseInt(cardNumber, 10);
+				this.currentMethod = cardMethod;
+				this.currentAssist = memPalaceName;
 			} else {
 				this.inProgressState = 3;
 				this.activeCardNumber = this.cardsFinished.length;
@@ -393,7 +535,15 @@ class PracticeManager extends React.Component {
 			}
 
 			this.shufflePracticeDeck();
-			this.setCurrentCardAndAnimate('hide', 'bounceInRight', false, 0);
+			this.memPalaceName = memPalaceName === "0" ? null : memPalaceName;
+			this.currentMemPalaceImage = null;
+			this.currentInfoSpots = [];
+			if (memPalaceName !== 'None' && memPalaceName !== '0') {
+				let [imageIndex, _] = this.getCurrentMemPalaceImageAndNextInfoSpot();
+				this.currentMemPalaceImage = "http://0.0.0.0:3001" + Manager.memPalacesObj[memPalaceName].image_urls[imageIndex];
+			} else {
+				this.setCurrentCardAndAnimate('hide', 'bounceInRight', false, 0);
+			}
 			this.cardBackAnimState = 'hide';
 		}
 	}
@@ -411,30 +561,27 @@ class PracticeManager extends React.Component {
 		if (this.recallTimer.current) {
 			this.recallTimer.current.resetTimer();
 		}
-		if (this.selectMode.current) {
-			this.selectMode.current.value = 0;
-			this.currentMode = 0;
-		}
-		if (this.selectNumber.current) {
-			this.selectNumber.current.value = 0;
-			this.activeCardNumber = 0;
-		}
-		if (this.selectMethod.current) {
-			this.selectMethod.current.value = 0;
-			this.currentMethod = 0;
-		}
-		if (this.selectAssist.current) {
-			this.selectAssist.current.value = 0;
-			this.currentAssist = 0;
+
+		let selectVals = {
+			'selectMode': 'currentMode',
+			'selectNumber': 'activeCardNumber',
+			'selectMethod': 'currentMethod',
+			'selectAssist': 'currentAssist'
+		};
+
+		for (let key in selectVals) {
+			if (this[key].current) {
+				this[key].current.value = 0;
+				this[selectVals[key]] = 0;
+			}
 		}
 	}
 
 	startRecall = () => {
 		// If valid
 		if (this.inProgressState === 2 && this.currentMemStep-1 === parseInt(this.activeCardNumber, 10)) {
-			if (this.recallTimer.current) {
+			if (this.recallTimer.current)
 				this.recallTimer.current.startTimer();
-			}
 
 			this.currentStep = 0;
 			this.inProgressState = 3;
@@ -446,44 +593,47 @@ class PracticeManager extends React.Component {
 
 	updateMode = () => this.currentMode = this.selectMode.current.value;
 
-	difficulty(indexOrNumber) {
-		if (indexOrNumber === 0) {
-			return 'Easy';
-		} if (indexOrNumber === 1) {
-			return 'Medium';
-		} if (indexOrNumber === 2) {
-			return 'Hard';
-		} if (indexOrNumber === 13) {
-			return 'easy';
-		} if (indexOrNumber === 26) {
-			return 'medium';
-		} if (indexOrNumber === 52) {
-			return 'hard';
+	difficulty(index) {
+		let diff = {
+			0: 'Easy',
+			1: 'Medium',
+			2: 'Hard',
+			3: 'Very Hard'
+		};
+
+		if (diff[index]) {
+			return diff[index];
 		} else {
 			return 'Very Hard';
 		}
 	}
 
-	handleKeyDown = (e) => {
-		if (e.key === 'Enter') {
-			if (this.inProgressState === 0) {
-				if (this.goButton.current) {
-					this.goButton.current.click();
-				}
-			} else if (this.inProgressState === 1 || this.inProgressState === 3) {
-				if (this.nextCardButton.current) {
-					this.nextCardButton.current.click();
-				}
-			} else if (this.inProgressState === 2) {
-				if (this.startRecallButton.current) {
-					this.startRecallButton.current.click();
-				}
-			} else if (this.inProgressState === 4) {
-				if (this.nextRoundButton.current) {
-					this.nextRoundButton.current.click();
-				}
-			}
+	databaseDifficulty(number) {
+		let diff = {
+			13: 'easy',
+			26: 'medium',
+			39: 'hard',
+			52: 'very_hard'
+		};
+
+		if (diff[number]) {
+			return diff[number];
+		} else {
+			return 'very hard';
 		}
+	}
+
+	handleKeyDown = (e) => {
+		let stateToButton = {
+			0: this.goButton,
+			1: this.nextCardButton,
+			2: this.startRecallButton,
+			3: this.nextCardButton,
+			4: this.nextRoundButton
+		};
+
+		if (e.key === 'Enter' && stateToButton[this.inProgressState].current)
+			stateToButton[this.inProgressState].current.click();
 	}
 
 	curr(ref) {
@@ -494,28 +644,37 @@ class PracticeManager extends React.Component {
 		}
 	}
 
+	isUsingMemPalace() {
+		if (this.currentAssist !== 0 && this.currentAssist !== '0' && this.currentAssist !== 'None') {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	componentDidMount() {
 		this.getCardsFinished();
+		this.populateValidPalaces();
 		document.addEventListener("keydown", this.handleKeyDown);
 	}
 
 	componentWillUnmount() {
-		document.removeEventListener("keydown", this.handleKeyDown);	
+		document.removeEventListener("keydown", this.handleKeyDown);
 	}
 
 	render() {
 		const { Manager } = this.props;
-		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, { 
-			'card-mini': this.currentAssist !== 'None' && this.currentMode !== 'Flash Cards',
-			'bg-light': Manager.deckObject.deck_info.deck_type === 'light',
+		const isUsingMemPalace = this.isUsingMemPalace();
+
+		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, {
+			'bg-white': Manager.deckObject.deck_info.deck_type === 'light',
 			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
 			'text-white': Manager.deckObject.deck_info.deck_type === 'dark',
 			'd-none': this.cardAnimState === 'hide'
 		});
 
-		const deckTypeBackClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardBackAnimState, { 
-			'card-mini': this.currentAssist !== 'None' && this.currentMode !== 'Flash Cards',
-			'bg-light': Manager.deckObject.deck_info.deck_type === 'light',
+		const deckTypeBackClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardBackAnimState, {
+			'bg-white': Manager.deckObject.deck_info.deck_type === 'light',
 			'bg-dark': Manager.deckObject.deck_info.deck_type === 'dark',
 			'd-none': this.inProgressState !== 3 || this.cardBackAnimState === 'hide'
 		});
@@ -533,31 +692,8 @@ class PracticeManager extends React.Component {
 			practiceCpMarginBottom = '-230px';
 		}
 
-		// const currentThreeStep = (this.currentStep-1)%3;
-
-		// let cardProps = {};
-		// if (this.practiceDeck !== null && this.currentMode !== 'Flash Cards') {
-		// 	cardProps.cardTitle = this.practiceDeck[this.currentStep-1-currentThreeStep].name;
-		// 	cardProps.cardImg = this.practiceDeck[this.currentStep-1-currentThreeStep].image_url;
-		// 	cardProps.cardImgTx = this.practiceDeck[this.currentStep-1-currentThreeStep].image_tx;
-		// 	cardProps.cardImgTy = this.practiceDeck[this.currentStep-1-currentThreeStep].image_ty;
-		// 	cardProps.cardImgH = this.practiceDeck[this.currentStep-1-currentThreeStep].image_h;
-		// 	cardProps.cardImgW = this.practiceDeck[this.currentStep-1-currentThreeStep].image_w;
-
-		// 	if (currentThreeStep >= 1)
-		// 		cardProps.action1 = this.practiceDeck[this.currentStep-1-currentThreeStep+1].action1;
-
-		// 	if (currentThreeStep >= 2) {
-		// 		cardProps.action2 = this.practiceDeck[this.currentStep-1].action2;
-		// 		cardProps.objectImgTx = this.practiceDeck[this.currentStep-1].action2_tx;
-		// 		cardProps.objectImgTy = this.practiceDeck[this.currentStep-1].action2_ty;
-		// 		cardProps.objectImgH = this.practiceDeck[this.currentStep-1].action2_h;
-		// 		cardProps.objectImgW = this.practiceDeck[this.currentStep-1].action2_w;
-		// 	}
-		// }
-
 		let cardProps = {};
-		if (this.practiceDeck !== null && this.currentAssist === 'None') {
+		if (this.practiceDeck !== null && !isUsingMemPalace) {
 			cardProps.cardTitle = this.currentCard.name;
 			cardProps.cardImg = this.currentCard.image_url;
 			cardProps.cardImgTx = this.currentCard.image_tx;
@@ -574,7 +710,6 @@ class PracticeManager extends React.Component {
 			cardProps.isBasic = true;
 		}
 
-		// TODO: Clean up
 		return(
 			<div id="edit-deck-tab" className="tab-content">
 				<div className={classNames("tab-pane", "fade", {"active show": Manager.currentSubNav === 'Practice'})}>
@@ -582,94 +717,21 @@ class PracticeManager extends React.Component {
 					<div className="container">
 						<div className="d-flex flex-column practice-cp" style={{'marginBottom': practiceCpMarginBottom}}>
 
-							<div className='timer-bar card no-border' style={{'height': timerHeight}}>
-								<center>
-									{this.inProgressState > 0 && this.inProgressState <= 4 ? (
-										this.currentMode === 'Flash Cards' ? 'Flash Timer' : 'Memory Timer'
-									) : 'Timer'}:
-								</center> <Timer ref={this.memTimer}/>
-
-								{(this.inProgressState >= 2 && this.currentMode !== 'Flash Cards') && <>
-									Recall timer: <Timer ref={this.recallTimer}/>
-									Mistakes: <br/>
-									<div className="mistakes">
-										{this.currentMistakes === 0 ? (
-											<b>None</b>
-										) : (<>
-											{Array.apply(null, 
-												Array(this.currentMistakes)
-											).map((_, mistake_number) => {
-												return (
-													<i key={mistake_number} className="fa fa-times mistake" aria-hidden="true"></i>
-												)
-											})}
-										</>)}
-									</div>
-								</>}
-							</div>
-
-							{(this.inProgressState > 0 && this.inProgressState < 4) && <div className="pt-2">
-								<button type="button" onClick={this.resetPractice} className="btn btn-danger" style={{'width': '134px'}}>
-									Reset
-								</button>
-							</div>}
+							<TimerBar memTimer={this.memTimer} recallTimer={this.recallTimer} timerHeight={timerHeight}
+								currentMode={this.currentMode} currentMistakes={this.currentMistakes} resetPractice={this.resetPractice}
+								inProgressState={this.inProgressState} progressEnum={this.progressEnum}
+							/>
 
 						</div>
 
 						<div className="row">
 
-							<div className={configDisplay}>
-								<br/><br/>
-								<div className="form-group">
-								    <select className="custom-select" defaultValue="0" onChange={this.updateMode} ref={this.selectMode} autoFocus>
-								      <option value="0" disabled>Review Mode</option>
-								      {['Flash Cards', 'Memorize the Deck'].map((mode, index) => {
-								      	return (<option key={index} value={mode}>
-								      				{mode}
-								      			</option>)
-								      })}
-								    </select>
-								</div>
+							<ConfigDisplay configDisplay={configDisplay} currentMode={this.currentMode} updateMode={this.updateMode}
+								selectMode={this.selectMode} cardsFinished={this.cardsFinished} difficulty={this.difficulty}
+								selectNumber={this.selectNumber} selectMethod={this.selectMethod} selectAssist={this.selectAssist}
+								validPalaces={this.validPalaces} startPractice={this.startPractice} goButton={this.goButton} />
 
-								{this.currentMode === 'Memorize the Deck' && <>
-									<div className="form-group">
-									    <select className="custom-select" defaultValue="0" ref={this.selectNumber}>
-									      <option value="0" disabled>Number to memorize</option>
-									      {[13,26,39,52].map((number, index) => {
-									      	return (<option key={index} value={number} disabled={this.cardsFinished.length < number}>
-									      				{this.difficulty(index)}: {number}
-									      			</option>)
-									      })}
-									    </select>
-									</div>
-
-									<div className="form-group">
-									    <select className="custom-select" defaultValue="0" ref={this.selectMethod}>
-									      <option value="0" disabled>Recall method</option>
-									      {['Suit and Denomination', 'Card Name'].map((method, index) => {
-									      	return (<option key={index} value={method}>
-									      				{method}
-									      			</option>)
-									      })}
-									    </select>
-									</div>
-
-									<div className="form-group">
-									    <select className="custom-select" defaultValue="0" ref={this.selectAssist}>
-									      <option value="0" disabled>Memory palace</option>
-									      {['Default', 'None'].map((method, index) => {
-									      	return (<option key={index} value={method}>
-									      				{method}
-									      			</option>)
-									      })}
-									    </select>
-									</div>
-								</>}
-
-								<button type="button" onClick={this.startPractice} ref={this.goButton} className="btn btn-primary btn-danger practice-button-start">Go!</button>
-							</div>
-
-							{this.inProgressState === 4 ? (<>
+							{this.inProgressState === this.progressEnum['FINISHED'] ? (<>
 								<div className="container text-center">
 									<div className="recall animated jackInTheBox">
 										<h1 style={{'fontColor': 'green'}}>Success</h1>
@@ -684,24 +746,39 @@ class PracticeManager extends React.Component {
 									<div className="container">
 										<div className="card-memory-main">
 
-											{(this.inProgressState === 1 || this.inProgressState === 3) &&
-												<Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom}
-													  cardSuitImg={this.getCardSuitImage()} cardImgAlt="" {...cardProps}
-												/>
-											}
+											{(this.inProgressState === this.progressEnum['MEMORIZE'] || this.inProgressState === this.progressEnum['RECALL']) && <>
+												{this.memPalaceName !== null &&
+													<PanoramaViewer panoImgSrc={this.currentMemPalaceImage} panoImgInfoSpotsAdvanced={this.currentInfoSpots} ref={this.panView} />
+												}
 
-											{this.inProgressState === 2 && <div className="container text-center">
+												<div className={this.selectAssist.current && this.selectAssist.current.value !== 'None' ? '' : ''}>
+													{this.currentMode === 'Flash Cards' ? (
+														<Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom} cardSuitImg={this.getCardSuitImage()} />
+													): (
+														<Card klasses={deckTypeClasses} cardDenom={this.currentCard.denom}
+															  cardSuitImg={this.getCardSuitImage()} cardImgAlt="" {...cardProps}
+														/>
+													)}
+												</div>
+
+											</>}
+
+											{this.inProgressState === this.progressEnum['INTERMISSION'] && <div className="container text-center">
 												<button type="button" onClick={this.startRecall} ref={this.startRecallButton} className="btn btn-danger recall">
 													Start Recall
 												</button>
 											</div>}
-											
-											{this.inProgressState === 3 && <>
-												{this.currentMode !== 'Flash Cards' && 
-													<Card klasses={deckTypeBackClasses} cardImgAlt="card-background"
-													  cardImg={cardBackImg} isCardBack={true} isBasic={this.currentAssist !== 'None'} 
-													/>
-												}
+
+											{this.inProgressState === this.progressEnum['RECALL'] && <>
+												{this.currentMode !== 'Flash Cards' && <>
+													{this.memPalaceName !== null ? (
+														<PanoramaViewer panoImgSrc={this.currentMemPalaceImage} ref={this.panView} />
+													) : (
+														<Card klasses={deckTypeBackClasses} cardImgAlt="card-background"
+														  cardImg={cardBackImg} isCardBack={true} isBasic={isUsingMemPalace}
+														/>
+													)}
+												</>}
 
 												{this.currentMethod === 'Card Name' ? (
 													<div className={"form-group " + this.inputAnimClasses}>
@@ -710,37 +787,17 @@ class PracticeManager extends React.Component {
 													</div>
 												) : (<>
 													<div className={"form-inline justify-content-center " + this.inputAnimClasses}>
-														<div className="form-group">
-														    <select className="custom-select" defaultValue="0" ref={this.selectDenom}>
-														      <option value="0" disabled>Denomination</option>
-														      {['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'].map(
-														      	(denom, index) => {
-															      	return (<option key={index} value={denom}>
-															      				{denom}
-															      			</option>)
-														      	}
-														      )}
-														    </select>
-														</div>
+														<Select ref={this.selectDenom} placeholder="Denomination" placeholderValue="0"
+															options={['Ace', 'King', 'Queen', 'Jack', '10', '9', '8', '7', '6', '5', '4', '3', '2']} />
 														&nbsp;<b>of</b>&nbsp;
-														<div className="form-group">
-														    <select className="custom-select" defaultValue="0" ref={this.selectSuit}>
-														      <option value="0" disabled>Suit</option>
-														      {['Spades', 'Clubs', 'Diamonds', 'Hearts'].map(
-														      	(suit, index) => {
-															      	return (<option key={index} value={suit}>
-															      				{suit}
-															      			</option>)
-														      	}
-														      )}
-														    </select>
-														</div>
+														<Select ref={this.selectSuit} placeholder="Suit" placeholderValue="0"
+															options={['Spades', 'Clubs', 'Diamonds', 'Hearts']} />
 													</div>
 													<br/>
 												</>)}
 											</>}
 
-											{(this.inProgressState === 1 || this.inProgressState === 3) &&
+											{(this.inProgressState === this.progressEnum['MEMORIZE'] || this.inProgressState === this.progressEnum['RECALL']) &&
 												<div className={this.currentMode === 'Flash Cards' ? "next-flash-card-go" : "next-card-go"}>
 													<span><b>
 														{this.currentStep > this.activeCardNumber ? this.activeCardNumber : this.currentStep}</b> of <b>{this.activeCardNumber}
@@ -761,8 +818,6 @@ class PracticeManager extends React.Component {
 										</div>
 									</div>
 
-									{this.selectAssist === 'Normal' && <>
-									</>}
 								</div>
 							)}
 
@@ -775,4 +830,4 @@ class PracticeManager extends React.Component {
 	}
 }
 
-export default PracticeManager;*/
+export default PracticeManagerPanorama;

@@ -15,6 +15,9 @@ class ScoreList extends React.PureComponent {
 		} else if (bestTimes.hard !== undefined) {
 			difficultyStr = 'Hard';
 			difficultyObj = bestTimes.hard;
+		} else if (bestTimes.very_hard !== undefined) {
+			difficultyStr = 'Very Hard';
+			difficultyObj = bestTimes.very_hard;
 		}
 
 		return (

@@ -63,7 +63,7 @@ class CreateManager extends React.Component {
 				!String.isEmpty(this.clubs.current.value) && !String.isEmpty(this.spades.current.value)) {
 
 				deckObject = {
-					red: this.red.current.value, black: this.black.current.value, hearts: this.hearts.current.value, 
+					red: this.red.current.value, black: this.black.current.value, hearts: this.hearts.current.value,
 					clubs: this.clubs.current.value, diamonds: this.diamonds.current.value, spades: this.spades.current.value
 				};
 			}
@@ -76,7 +76,7 @@ class CreateManager extends React.Component {
 
 	render() {
 		const { Manager } = this.props;
-		const isLightSelected = classNames('card', 'bg-light', 'bg-light-hover', 'mb-3', { 'bg-active-light': this.state.deckType === 'light' });
+		const isLightSelected = classNames('card', 'bg-white', 'bg-light-hover', 'mb-3', { 'bg-active-light': this.state.deckType === 'light' });
 		const isDarkSelected = classNames('card', 'bg-dark', 'bg-dark-hover', 'mb-3', 'text-white', { 'bg-active-dark': this.state.deckType === 'dark' });
 		const isCustomFormVisible = classNames({ 'hide-div': !this.state.showCustom });
 
@@ -88,14 +88,14 @@ class CreateManager extends React.Component {
 
 	             	<div className="row">
 	             		<div className="col-3">
-							<Card klasses={isLightSelected} clickHandler={this.deckTypeClick('light')} cardDenom={'Ace'} cardTitle="Light card example" 
-								  cardSuitImg={heartsImg} cardImg={phelpsImg} cardImgAlt="phelps" cardName="Michael Phelps" 
+							<Card klasses={isLightSelected} clickHandler={this.deckTypeClick('light')} cardDenom={'Ace'} cardTitle="Light card example"
+								  cardSuitImg={heartsImg} cardImg={phelpsImg} cardImgAlt="phelps" cardName="Michael Phelps"
 								  action1="Swimming" action2="Smoking kush" />
 						</div>
 
 						<div className="col-3">
-							<Card klasses={isDarkSelected} clickHandler={this.deckTypeClick('dark')} cardDenom={'Ace'} cardTitle="Dark card example" 
-								  cardSuitImg={spadesWhiteImg} cardImg={usainBoltImg} cardImgAlt="usain-bolt" cardName="Usain Bolt" 
+							<Card klasses={isDarkSelected} clickHandler={this.deckTypeClick('dark')} cardDenom={'Ace'} cardTitle="Dark card example"
+								  cardSuitImg={spadesWhiteImg} cardImg={usainBoltImg} cardImgAlt="usain-bolt" cardName="Usain Bolt"
 								  action1="Running" action2="Jumping real high" />
 						</div>
 					</div>
@@ -103,7 +103,7 @@ class CreateManager extends React.Component {
 					<br/>
 					<h4>Mnemonics</h4>
 	             	<p>
-	             		Choose a theme for card suit and color. If unsure, choose a theme that would be 
+	             		Choose a theme for card suit and color. If unsure, choose a theme that would be
 	             		easy to make a list of things that belong to it.
 	             	</p>
 
@@ -111,14 +111,14 @@ class CreateManager extends React.Component {
 						<div className="custom-control custom-radio">
 						  <input type="radio" id="customRadio1" name="customRadio" onClick={this.themeClick} ref={this.theme1} className="custom-control-input"/>
 						  <label className="custom-control-label" htmlFor="customRadio1">
-						  	<b>Color:</b> Men (Black), Women (Red) &nbsp;&nbsp; 
+						  	<b>Color:</b> Men (Black), Women (Red) &nbsp;&nbsp;
 						  	<b>Suit:</b> Good (Hearts & Clubs), Evil (Diamonds & Spades)
 						  </label>
 						</div>
 						<div className="custom-control custom-radio">
 						  <input type="radio" id="customRadio2" name="customRadio" onClick={this.themeClick} ref={this.theme2} className="custom-control-input"/>
 						  <label className="custom-control-label" htmlFor="customRadio2">
-						  	<b>Color:</b> Good (Black), Evil (Red) &nbsp;&nbsp; 
+						  	<b>Color:</b> Good (Black), Evil (Red) &nbsp;&nbsp;
 						  	<b>Suit:</b> Men (Diamonds & Clubs), Women (Hearts & Spades)
 						  </label>
 						</div>

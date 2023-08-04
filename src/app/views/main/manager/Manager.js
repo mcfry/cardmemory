@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import CreateManager from './CreateManager.js';
 import EditManager from './EditManager.js';
 import MemPalaces from './MemPalaces.js';
-import PracticeManager from './PracticeManager.js';
+import PracticeManagerPanorama from './PracticeManagerPanorama.js';
 import Scoreboard from './Scoreboard.js';
 import Loading from '../../basic_components/Loading.js';
 
@@ -35,7 +35,7 @@ class Manager extends React.Component {
 		const { User, Manager } = this.props;
 
 		let navClasses = {
-			createClasses: classNames('nav-link', {'active show': this.checkActive('Create')}), 
+			createClasses: classNames('nav-link', {'active show': this.checkActive('Create')}),
 			editClasses: classNames('nav-link', {'active show': this.checkActive('Edit Deck')}),
 			memPalClasses: classNames('nav-link', {'active show': this.checkActive('Memory Palaces')}),
 			pracClasses: classNames('nav-link', {'active show': this.checkActive('Practice')}),
@@ -44,12 +44,12 @@ class Manager extends React.Component {
 
 		return(
 			<div className="manager">
-				<ul className="nav nav-tabs">
+				<ul className="nav nav-tabs bg-white">
 					<div className="container">
 		        		<div className={classNames({'d-none': User.isLoading || Manager.isLoading})}>
 		        			{!User.isLoggedIn ? (
 								<li className="nav-item pull-left">
-					              <button className={"nav-link active show"} 
+					              <button className={"nav-link active show"}
 					              	 onClick={this.subNavClick()} data-toggle="tab">Info</button>
 					            </li>
 					        ) : (<>
@@ -94,7 +94,7 @@ class Manager extends React.Component {
 						            	{Manager.deckObject !== null && <>
 											<EditManager/>
 											<MemPalaces/>
-											<PracticeManager/>
+											<PracticeManagerPanorama/>
 											<Scoreboard/>
 										</>}
 								</>)}

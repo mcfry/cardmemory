@@ -23,6 +23,11 @@ class Card extends React.Component {
 		this.cardImageError = this.cardImageError.bind(this);
 	}
 
+	isValidURL(str) {
+	  const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+	  return urlRegex.test(str);
+	}
+
 	normallizeDenom(denom) {
 		if (denom === 'Ace') {
 			return 'A';
@@ -103,8 +108,8 @@ class Card extends React.Component {
 				this.cardImageRef.current.setAttribute('data-xp', 0);
 				this.cardImageRef.current.setAttribute('data-yp', 0);
 			} else {
-				this.cardImageRef.current.style.transform = 
-				this.cardImageRef.current.style.webkitTransform = 
+				this.cardImageRef.current.style.transform =
+				this.cardImageRef.current.style.webkitTransform =
 					`translate(${this.props.cardImgTx}px, ${this.props.cardImgTy}px)`;
 				this.cardImageRef.current.setAttribute('data-xp', this.props.cardImgTx);
 				this.cardImageRef.current.setAttribute('data-yp', this.props.cardImgTy);
@@ -125,14 +130,14 @@ class Card extends React.Component {
 			if (this.cardImageRef.current) {
 				// Not yet seen (default pos)
 				if (this.props.objectImgTx === null) {
-					this.objectImageRef.current.style.transform = 
-					this.objectImageRef.current.style.webkitTransform = 
+					this.objectImageRef.current.style.transform =
+					this.objectImageRef.current.style.webkitTransform =
 						`translate(${20}px, -${this.cardImageRef.current.offsetHeight}px)`;
 					this.objectImageRef.current.setAttribute('data-xp', 20);
 					this.objectImageRef.current.setAttribute('data-yp', -(this.cardImageRef.current.offsetHeight));
 				} else {
-					this.objectImageRef.current.style.transform = 
-					this.objectImageRef.current.style.webkitTransform = 
+					this.objectImageRef.current.style.transform =
+					this.objectImageRef.current.style.webkitTransform =
 						`translate(${this.props.objectImgTx}px, ${this.props.objectImgTy}px)`;
 					this.objectImageRef.current.setAttribute('data-xp', this.props.objectImgTx);
 					this.objectImageRef.current.setAttribute('data-yp', this.props.objectImgTy);
@@ -202,7 +207,7 @@ class Card extends React.Component {
 		if (!this.props.isCardBack && !this.props.isBasic) {
 			cardRender = (
 				<div className={this.props.klasses} onClick={this.props.clickHandler}>
-				  <div className="card-header">
+				  <div className="card-header border-bottom-0">
 				  	&nbsp;{this.normallizeDenom(this.props.cardDenom)}
 				  	<img className="top-suit" alt="card-suit" src={this.props.cardSuitImg}/>
 				  </div>
@@ -211,8 +216,8 @@ class Card extends React.Component {
 				    <div className="card-div container">
 				    	<div className="row">
 				    		<div className="mx-auto card-images-cont">
-				    			<img className="card-image card-image-1 img-fluid" onLoad={this.cardImgLoaded} onError={this.cardImgError} src={this.props.cardImg} alt={this.props.cardImgAlt} ref={this.cardImageRef} />
-				    			<img className="card-image card-image-2 img-fluid" onLoad={this.objImageLoaded} onError={this.objImgError} src={this.props.action2} alt={this.props.cardImgAlt} ref={this.objectImageRef} />
+				    			{this.props.cardImg && <img className="card-image card-image-1 img-fluid" onLoad={this.cardImgLoaded} onError={this.cardImgError} src={this.props.cardImg} alt={this.props.cardImgAlt} ref={this.cardImageRef} />}
+				    			{(this.props.action2 && this.isValidURL(this.props.action2)) && <img className="card-image card-image-2 img-fluid" onLoad={this.objImageLoaded} onError={this.objImgError} src={this.props.action2} alt={this.props.objImgAlt} ref={this.objectImageRef} />}
 				    		</div>
 				    	</div>
 				    </div>
@@ -223,10 +228,10 @@ class Card extends React.Component {
 					    </p>
 					</div>
 				  </div>
-				  <div className="card-footer text-right">
+				  <div className="card-footer text-right border-top-0">
 				  	<img className="bottom-suit" alt="card-suit" src={this.props.cardSuitImg}/>
 				  	<span style={{marginLeft: this.bottomMarginHacky(this.props.cardDenom)}}>{this.normallizeDenom(this.props.cardDenom)}&nbsp;&nbsp;&nbsp;&nbsp;</span>
-				  </div> 
+				  </div>
 				</div>
 			);
 		} else if (this.props.isCardBack && !this.props.isBasic) {
@@ -261,11 +266,9 @@ class Card extends React.Component {
 			);
 		}
 
-		return (
-			<React.Fragment>
-				{cardRender}
-			</React.Fragment>
-		);
+		return (<>
+			{cardRender}
+		</>);
 	}
 }
 

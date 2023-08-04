@@ -40,9 +40,9 @@ class Manager extends React.Component {
 	constructor(props) {
 		super(props);
 
-		// defaults
-		this.currentSuit = 'hearts';
-		this.currentDenom = 'Ace';
+		// defaults - not sure if redundant
+		// this.currentSuit = 'hearts';
+		// this.currentDenom = 'Ace';
 
 		// refs
 		for (let key of ['cardForm', 'cardElem', 'cardName', 'imageUrl', 'action1', 'action2', 'cardsUpload'])
@@ -281,8 +281,8 @@ class Manager extends React.Component {
 	render() {
 		const { Manager } = this.props;
 		const { deck_info } = Manager.deckObject;
-		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, { 
-			'bg-light': deck_info.deck_type === 'light',
+		const deckTypeClasses = classNames('card', 'mb-3', 'mx-auto', 'animated', 'card-animate', this.cardAnimState, {
+			'bg-white': deck_info.deck_type === 'light',
 			'bg-dark': deck_info.deck_type === 'dark',
 			'text-white': deck_info.deck_type === 'dark'
 		});
@@ -359,17 +359,17 @@ class Manager extends React.Component {
 															<input type="text" className="form-control" id="image-url-input" onChange={this.editCard('image_url')} placeholder="URL" ref={this.imageUrl}/>
 														</div>
 														<div className="col-md-1">
-															{(cardObj.image_url !== null && cardObj.image_url.length > 0) && 
+															{(cardObj.image_url !== null && cardObj.image_url.length > 0) &&
 																<i className="fa fa-times field-close-btn" onClick={this.clearField(this.imageUrl, 'cardImage')}></i>
 															}
 														</div>
 													</div>
 												</div>
 												<div className="form-group">
-													<label htmlFor="action2-input">Object Image URL</label>
+													<label htmlFor="action2-input">Object Image Url</label>
 													<div className="row">
 														<div className="col-md-11">
-															<input type="text" className="form-control" id="action2-input" onChange={this.editCard('action2')} placeholder="Action name" ref={this.action2}/>
+															<input type="text" className="form-control" id="action2-input" onChange={this.editCard('action2')} placeholder="Object Image URL" ref={this.action2}/>
 														</div>
 														<div className="col-md-1">
 															{(cardObj.action2 !== null && cardObj.action2.length > 0) &&

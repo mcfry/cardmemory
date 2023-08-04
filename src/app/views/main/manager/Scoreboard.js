@@ -17,7 +17,7 @@ import 'animate.css/animate.min.css';
 	}
 }) @observer
 class Scoreboard extends React.Component {
-	
+
 	componentDidMount() {
 		this.props.Manager.getTimes();
 	}
@@ -34,11 +34,11 @@ class Scoreboard extends React.Component {
 					<div className="container">
 						<div className="row">
 							<div className="mx-auto">
-								{(Manager.bestTimes.easy === undefined 
-									&& Manager.bestTimes.medium === undefined 
-										&& Manager.bestTimes.hard === undefined) ? (<h3>
-									<i className="fa fa-exclamation-triangle" aria-hidden="true"></i>
-									&nbsp;No data yet. Practice your decks and complete a difficulty to start a personal scoreboard!
+								{(Manager.bestTimes.easy === undefined
+									&& Manager.bestTimes.medium === undefined
+										&& Manager.bestTimes.hard === undefined) ? (<h3 className="d-flex flex-column justify-content-center align-items-center">
+									<p><i className="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;No data yet.</p>
+									<p>Practice your decks and complete a difficulty to start a personal scoreboard!</p>
 								</h3>) :
 									<ScoreList bestTimes={Manager.bestTimes}/>
 								}

@@ -17,6 +17,7 @@ class Manager {
 
 	@observable currentSubNav = "Create";
 	@observable isLoading = false;
+	@observable numLoading = 0;
 	@observable deckObject = null; // cards: {name, image_url, action1, action2}, deck_info: {}
 	@observable memPalacesObj = null; // name: [image_urls]
 	@observable bestTimes = [];
@@ -28,6 +29,20 @@ class Manager {
 
 	@action setIsLoading(isLoading) {
 		this.isLoading = isLoading;
+	}
+
+	@action enqueueLoad() {
+		this.numLoading += 1;
+
+		if (this.isLoading === false)
+			this.setIsLoading(true);
+	}
+
+	@action dequeueLoad() {
+		this.numLoading -= 1;
+
+		if (this.numLoading <= 0)
+			this.setIsLoading(false);
 	}
 
 	@action setDeckObject(deckObject) {
@@ -233,7 +248,7 @@ class Manager {
 	// Private (Not Enforced) //
 
 		loadDeck() {
-			this.setIsLoading(true);
+			this.enqueueLoad();
 			axios({
 				url: `http://0.0.0.0:3001/api/v1/deck_infos`, 
 		        method: 'get',
@@ -249,16 +264,15 @@ class Manager {
 
 		    	let tempDeckObj = observable.object(response.data);
 		    	this.setDeckObject(tempDeckObj);
-		    	this.setIsLoading(false);
+		    	this.dequeueLoad();
 			}).catch((error) => {
 				this.setDeckObject(null);
-				this.setIsLoading(false);
+				this.dequeueLoad();
 			});
 		}
 
-		// BUGFIX: if loaded at same time as deck can have issue with object null (ui renders loaded but req in progress)
 		loadMemoryPalaces() {
-			this.setIsLoading(true);
+			this.enqueueLoad();
 			axios({
 				url: `http://0.0.0.0:3001/api/v1/memory_palaces`, 
 		        method: 'get',
@@ -271,12 +285,12 @@ class Manager {
 		    	//console.log(response.data);
 		    	let memPalacesObj = observable.object(response.data);
 		    	this.setMemPalaces(memPalacesObj);
-		    	this.setIsLoading(false);
+		    	this.dequeueLoad();
 			}).catch((error) => {
 				console.log(error.response);
 
 				this.setMemPalaces(null);
-				this.setIsLoading(false);
+				this.dequeueLoad();
 			});
 		}
 

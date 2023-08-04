@@ -9,7 +9,7 @@ class User {
 
 		this.logInFromStorage();
 	}
-	
+
 	/////////////////////
 	// Getters/Setters //
 	/////////////////////
@@ -40,7 +40,7 @@ class User {
 		this.setIsLoading(true);
 		return new Promise((resolve, reject) => {
 			axios({
-		        url: `http://0.0.0.0:3001/users`, 
+		        url: `http://0.0.0.0:3001/users`,
 		        method: 'post',
 		        data: {
 		        	username: username,
@@ -79,7 +79,7 @@ class User {
 	logIn(username = null, password = null) {
 	    if (username && password) {
 			return this.createSession(username, password);
-	    } else if (this.isLoggedIn) { 
+	    } else if (this.isLoggedIn) {
 			return this.logOut();
 	    }
 	}
@@ -88,7 +88,7 @@ class User {
 		this.setIsLoading(true);
 		return new Promise((resolve, reject) => {
 			axios({
-		        url: `http://0.0.0.0:3001/api/v1/sessions`, 
+		        url: `http://0.0.0.0:3001/api/v1/sessions`,
 		        method: 'delete',
 		        headers: {
 		          'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ class User {
 			this.setIsLoading(true);
 			return new Promise((resolve, reject) => {
 				axios({
-			        url: `http://0.0.0.0:3001/api/v1/sessions`, 
+			        url: `http://0.0.0.0:3001/api/v1/sessions`,
 			        method: 'post',
 			        data: {
 			        	username: username,
@@ -143,6 +143,9 @@ class User {
 					let authentication_token, email, username;
 					({authentication_token, email, username} = response.data);
 
+					// Because it's a small project, this is fine. In future should just roll
+					// Firebase, etc with a decoupled backend
+					// https://github.com/waiting-for-dev/devise-jwt/issues/126
 					localStorage.setItem('authentication_token', authentication_token);
 					localStorage.setItem('username', username);
 					localStorage.setItem('email', email);
@@ -177,7 +180,7 @@ class User {
 		logInFromStorage() {
 			this.setIsInitialLoading(true);
 			axios({
-		        url: `http://0.0.0.0:3001/api/v1/sessions`, 
+		        url: `http://0.0.0.0:3001/api/v1/sessions`,
 		        method: 'get',
 		        headers: {
 		          'Content-Type': 'application/json',
@@ -187,7 +190,7 @@ class User {
 		    }).then((response) => {
 		    	this.rootStore.ManagerStore.loadDeck();
 		    	this.rootStore.ManagerStore.loadMemoryPalaces();
-		    	
+
 				this.setIsLoggedIn(true);
     			this.setIsInitialLoading(false);
 			}).catch((error) => {

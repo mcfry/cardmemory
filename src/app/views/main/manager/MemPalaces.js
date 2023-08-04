@@ -75,7 +75,7 @@ class MemPalaces extends React.Component {
 		let total = 0;
 		if (memPalacesObj && this.currentPalaceName) {
 			let currentPalaceImgGroup = memPalacesObj[this.currentPalaceName].groups_to_image_array;
-			let i = 0; while (total !== 52 && i < currentPalaceImgGroup.length) {
+			let i = 0; while (i < currentPalaceImgGroup.length) {
 				if (currentPalaceImgGroup[i].length === 0) {
 					valid = false;
 				} else {
@@ -169,6 +169,7 @@ class MemPalaces extends React.Component {
 						            		panoImgSrc={"http://0.0.0.0:3001" + Manager.memPalacesObj[this.currentPalaceName].image_urls[this.currentImageIndex]}
 						            		panoImgInfoSpots={Manager.memPalacesObj[this.currentPalaceName].groups_to_image_array[this.currentImageIndex]}
 						            		addGroupSpotToImage={this.addGroupSpotToImage} setGroupSpotImagePositions={this.setGroupSpotImagePositions}
+						            		addingEnabled={true}
 						            	/>
 					            	</div>
 
